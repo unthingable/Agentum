@@ -1,0 +1,93 @@
+Initial working title: "Simply Complexity" or "Modeling Social Complexity for Hackers" or "Hacking Social Complexity"
+
+The purpose of this book is to introduce the readers to the field of complex system modeling and specifically social complexity -- and get their feet wet building and understanding models of complex systems in a variety of settings, and interpreting what the models say. There will be a lot of code in the book, and a lot of exercises inviting readers to write code. Each chapter will roughly cover an area of research in complex system models, and end with a reading list and a open research problems -- an invitation for readers to make their own mark in the field. 
+
+I would like to get a couple prominent people in the field to contribute writing and/or code to the book -- but probably not invite them as co-authors. Is there a good way to do contributed chapters?
+
+Also -- as I'm developing the outline, I'm realizing that this may not fit into the short-form book… Shall we do a long-form or split this up?
+
+The book will be based on an open-source Python modeling toolkit Socium which I am developing with a few collaborators. Readers will be invited to contribute to development of the toolkit as well.
+
+Outline:
+
+* Chapter 1: What is complexity?
+introduction -- stories and pictures -- 
+forest fires
+avalanches
+percolation
+information diffusion/viral videos
+banking crisis and lending/insurance networks
+interdependence of economy, society, politics, biosphere
+
+* chapter 2: complexity theory and first models
+Langton -- total more then a sum of its parts
+
+Wolfram -- emergence of complexity from simple rules of interaction
+(Code: Simple cellular automata model demonstrating complex outcome)
+(Code: Cellular automata and evolution of cities)
+
+* Chapter 3: Genome of complexity
+Kauffman -- origins or order 
+NK Model -- genome of complexity -- (Code)
+generating complexity from simple rules
+Optimization on rugged landscapes (Code)
+Genetic algorithm -- evolution on a rugged landscape (Code
+NK-C Model -- origin of species (Code)
+Applications of NK and NK-C models in the real world 
+-- the field hospital problem
+-- business ecology
+Open research problems
+
+* Chapter 4: Agents and Emergence of Order
+What is an agent-based model? What is an agent? (Langton +)
+What is a "good agent-based model" 
+-- Axtell's levels 
+-- validation and verification
+Agent-based models vs. agent-based software design
+Agents in space (grids and maps and neighborhoods) and time (scheduling)
+Heat Bugs (code)
+Open Research Questions
+
+* Chapter 5: Modeling economics and economic thinking
+Zero-intelligence traders (code) -- Brian Arthur - Artificial Stock Markets
+Auctions and negotiations
+Emergence of firms - Axtell(code)
+Innovation and invention
+Open research problems
+
+Chapter 6: Modeling information diffusion
+Friedkin -- information diffusion and contagion
+Consumer behavior
+Fads and trends
+"Going viral" -- threshold models
+Open research problems
+
+7: Modeling organizations
+Garbage Can model -- Simon&March (Code)
+Co-evolution of networks and information -- Carley (Code)
+Tasks, planning, and business models 
+Evolution of Organizations -- Tsvetovat -- (Code)
+Evolution of organizations in competition -- Tsvetovat/Latek (Code)
+Open research problems
+
+Chapter 8: Agent-based models in Political science and history
+Emergence of culture -- Axelrod (Code)
+Hierarchies and power -- Latek/Cioffi/Tsvetovat (Code)
+Anasazi -- Epstein/Axtell
+-- more tbd -- 
+Open research problems
+
+
+9: Modeling cities
+Shelling -- emergence of segregation model (code)
+Parker/Filatova -- urban models and ecology
+Crooks -- <<TBD, Andrew Crooks will contribute>>
+
+Chapter 10: Agent-based models in biology, ecology, physics and other fields (an overview)
+<tentative -- we're already over the page limit>
+
+Chapter 11: Open research problems and call to action
+
+Appendix: Socium agent-based modeling toolkit API documentation
+Appendix: Further reading
+

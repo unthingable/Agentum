@@ -1,0 +1,19 @@
+Socium Requirements:
+* Simple pythonic agent model
+* Simulation is stoppable and serializable
+* Simulation can use multiple machines in a cluster configuration (we can run model that does not fit on a single machine)
+* Minimal cost/difficulty of entry
+* Web console (??)
+
+----- 
+* Environments as a graph -- lattice or sparse graph or multi-mode graph
+* Clock -- every agent is updated every tick, in random order (gaussian activation)
+* Clock -- environment updated once every X ticks
+* Agents -- state of agent must be serializable, agent can be stopped, restarted and restored any time
+* Environment -- state of environment must be serializable
+* Environment == graph; possibly multiple graphs on top of each other (Multi-mode)
+* Multiple environments
+* Edges of the environment graph = communication channels
+* Agents can see the Environment (limited vision, parameterized)
+* Agents can interact with environment (change values, place objects, etc)
+* Agents can communicate w/other agents using environment channels

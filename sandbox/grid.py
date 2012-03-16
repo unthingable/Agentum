@@ -1,5 +1,4 @@
-from collections import namedtuple
-Point = namedtuple("Point","x y")
+from itertools import product, izip
 
 class Cell(object):
     __slots__ = "heat"
@@ -8,11 +7,27 @@ class Cell(object):
         self.heat = heat
 
 class Grid(object):
-    def __init__(self, w=100, h=100):
-        self.width = w
-        self.height = h
-        self.cells = dict((Point(x,y), Cell(0)) for x in range(w) for y in range(h))
+    """
+    N-dimensional rectangular grid.
+    """
 
-    def __getitem__(self, xy):
-        x,y = xy
-        return self.cells[Point(x,y)]
+    def __init__(self, dimensions=(100,100)):
+        """
+        dimensions: list of dimensions.
+        Ex. (100,100,20) for a 3-dimensional 100x100x20 grid.
+        """
+        self._dimensions = dimensions
+        """
+        The grid is a dict keyed by coordinate tuple and valued by the Cell
+        object (for now).
+        """
+        self.cells = dict((tuple(xyz), Cell(0)) for xyz in product(*map(range, dimensions)))
+
+    def __getitem__(self, xyz): return self.cells[xyz]
+
+    @property
+    def dimensions(self): return self._dimensions
+
+import math
+def distance(a,b):
+    return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))

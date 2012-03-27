@@ -4,6 +4,7 @@
 #import Tkinter
 #import grid
 from grid import CellSpace
+from operator import attrgetter
 
 class Agent(object):
     pass
@@ -39,7 +40,7 @@ def step_bug(grid, bug):
         # ffuuuu
         # find a cell to migrate to
         neighbors = g.get_neighbor_cells(bug.cell)
-        for new_cell in sorted(neighbors, key=lambda x: x.heat):
+        for new_cell in sorted(neighbors, key=attrgetter("heat")):
             if not new_cell.bug:
                 # yay, move
                 new_cell.bug = bug

@@ -1,6 +1,7 @@
 from itertools import product, izip, imap, ifilter
 from abc import abstractmethod
 from random import choice
+import math
 
 class Cell(object):
     __slots__ = "heat", "bug"
@@ -19,7 +20,11 @@ class CellSpace(object):
         pass
 
     @abstractmethod
-    def get_neighbor_cells(self, cell, r=1):
+    def neighbors(self, cell, r=1):
+        pass
+
+    @abstractmethod
+    def distance(self, cell, r=1):
         pass
 
     @staticmethod
@@ -48,10 +53,8 @@ class Grid(CellSpace):
         """
         self._dimensions = dimensions
         self._dimension_names = names
-        """
-        The grid is a dict keyed by coordinate tuple and valued by the Cell
-        object (for now).
-        """
+        # The grid is a dict keyed by coordinate tuple and valued by the Cell
+        # object (for now).
         self.cell_map = dict((tuple(xyz), cell_fn()) for xyz in product(*imap(xrange, dimensions)))
         self.inverted_cell_map = dict((v,k) for k,v in self.cell_map.iteritems())
 
@@ -69,15 +72,22 @@ class Grid(CellSpace):
     def __len__(self):
         return len(self.cell_map)
 
-    def get_neighbor_cells(self, cell, r=1):
+    def _get_neighbor_indexes(self, cell, r=1):
         xyz = self.inverted_cell_map[cell]
-        ranges = (range(x-r,x+r+1) for x,y in izip(xyz, self.dimensions))
-        # TODO: wraparound
-
+        ranges = (xrange(x-r,x+r+1) for x in xyz)
+        # wraparound modulo dimension
+        ranges = (set(x%y for x in r) for r,y in izip(ranges, self.dimensions))
         # all the cells except center
         indexes = ifilter(lambda x: x != xyz, product(*ranges))
+        return indexes
+
+    def neighbors(self, cell, r=1):
+        indexes = self._get_neighbor_indexes(cell, r)
         return imap(self.cell_map.get, indexes)
 
-import math
-def distance(a,b):
-    return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))
+    def distance(self, cell1, cell2):
+        a,b = [self.inverted_cell_map[x] for x in (a,b)]
+        return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))
+
+class GraphSpace(CellSpace):
+    pass

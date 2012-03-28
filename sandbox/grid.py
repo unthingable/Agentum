@@ -3,6 +3,16 @@ from abc import abstractmethod
 from random import choice
 import math
 
+def memoize(f):
+    cache = {}
+    def decorated_function(*args):
+        if args in cache:
+            return cache[args]
+        else:
+            cache[args] = f(*args)
+            return cache[args]
+    return decorated_function
+
 class Cell(object):
     __slots__ = "heat", "bug"
 
@@ -81,6 +91,7 @@ class Grid(CellSpace):
         indexes = ifilter(lambda x: x != xyz, product(*ranges))
         return indexes
 
+    @memoize
     def neighbors(self, cell, r=1):
         indexes = self._get_neighbor_indexes(cell, r)
         return imap(self.cell_map.get, indexes)

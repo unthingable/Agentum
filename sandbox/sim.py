@@ -1,21 +1,27 @@
 """
-.
+Example simulation setup and agent code that uses the existing spaces.
 """
 #import Tkinter
 #import grid
-from grid import CellSpace
+import logging
+import sys
+from grid import CellSpace, Grid
 from operator import attrgetter
 
 class Agent(object):
     pass
 
-HEAT = 1
+HEAT = 1.1
 TOLERANCE = 2
 
 class Bug(Agent):
     __slots__ = "name", "cell"
 
 #grid = new Grid()
+
+logging.basicConfig()
+LOG = logging.getLogger("sim")
+LOG.setLevel(logging.DEBUG)
 
 from random import choice, shuffle
 def init_grid(grid, numbugs=20):
@@ -37,15 +43,18 @@ def step_bug(grid, bug):
     cell = bug.cell
     cell.heat += HEAT
     if cell.heat > TOLERANCE:
-        # ffuuuu
-        # find a cell to migrate to
-        neighbors = g.get_neighbor_cells(bug.cell)
+        # FFFUUUUUuuu!. Find a cell to migrate to.
+        neighbors = grid.neighbors(bug.cell)
         for new_cell in sorted(neighbors, key=attrgetter("heat")):
             if not new_cell.bug:
                 # yay, move
                 new_cell.bug = bug
                 cell.bug = None
                 bug.cell = new_cell
+                # cheat a little. TODO: give cells __unicode__()
+                LOG.debug("%s: %s -> %s" % (bug.name,
+                    grid.inverted_cell_map[cell],
+                    grid.inverted_cell_map[new_cell]))
                 break
 
 def diffuse(grid):
@@ -56,15 +65,24 @@ def diffuse(grid):
     heat_distribution_coeff = 2 ** cardinality
     heat_loss = 0.2
     for cell in grid.cells():
-        for n in grid.get_neighbor_cells(cell):
-            n.heat += (cell.heat * heat_loss) / (heat_distribution_coeff)
-        cell.heat *= heat_loss
+        heat_gain = (cell.heat * heat_loss) / heat_distribution_coeff
+        for n in grid.neighbors(cell):
+            n.heat += heat_gain
+        cell.heat *= 1 - heat_loss
 
-class Diffuser(Agent):
-    """
-    Diffuse the heat.
-    """
-    pass
+def run_simulation(steps=50):
+    g = Grid()
+    LOG.info("Starting simulation.")
+    bugs = init_grid(g)
+    for step in range(steps):
+        LOG.info("Step: %s" % step)
+        for bug in bugs:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            step_bug(g, bug)
+        diffuse(g)
+    LOG.info("Done!")
+    return g
 
 def draw(g):
     pass

@@ -1,23 +1,16 @@
 """
 Example simulation setup and agent code that uses the existing spaces.
 """
-#import Tkinter
-#import grid
 import logging
 import sys
 from grid import CellSpace, Grid
 from operator import attrgetter
-
-class Agent(object):
-    pass
 
 HEAT = 1.1
 TOLERANCE = 2
 
 class Bug(Agent):
     __slots__ = "name", "cell"
-
-#grid = new Grid()
 
 logging.basicConfig()
 LOG = logging.getLogger("sim")
@@ -83,6 +76,3 @@ def run_simulation(steps=50):
         diffuse(g)
     LOG.info("Done!")
     return g
-
-def draw(g):
-    pass

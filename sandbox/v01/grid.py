@@ -31,12 +31,6 @@ class Cell(object):
     def reset(self):
         self.__init__(**self._init)
 
-class SparseSpace(object):
-    """
-    N-dimensional cartesian space.
-    Agents can inspect r-neighborhoods and move.
-    """
-
 class CellSpace(object):
     """
     Cellular (discrete) space.

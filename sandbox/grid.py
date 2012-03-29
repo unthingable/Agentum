@@ -1,5 +1,6 @@
 from itertools import product, izip, imap, ifilter
-from abc import abstractmethod
+from collections import namedtuple
+from abc import abstractmethod, ABCMeta
 from random import choice
 import math
 
@@ -17,19 +18,12 @@ class Cell(object):
     """
     The basic element of our world. Must be hashable.
     """
-    __slots__ = "heat", "bug", "_init"
+    __slots__ = "properties", "agents"
 
-    def __init__(self, heat=0, bug=None):
-        self.heat = heat
-        self.bug = bug # only one bug allowed
-        self._init = dict(heat=heat,bug=bug)
+    def __init__(self, properties=None):
+        self.agents = set()
+        self.properties = properties or {}
 
-    def clear(self):
-        self.heat = 0
-        self.bug = None
-
-    def reset(self):
-        self.__init__(**self._init)
 
 class SparseSpace(object):
     """
@@ -39,9 +33,19 @@ class SparseSpace(object):
 
 class CellSpace(object):
     """
-    Cellular (discrete) space.
-    Agents can look around and move.
+    Cellular (discrete) space, to look around and travel through.
+    Space is just a fabric onto which cells are laid.
+
+    Space's responsibility is:
+    * arranging cells in a structure
+    * providing means of navigating this structure (r-neighborhoods)
+    * providing spatial measurements (distance)
+
+    Space is not responsible for knowing where agents are, where they are
+    and what happens inside the cells -- this is up to the simulation.
     """
+    __metaclass__ = ABCMeta
+
     @abstractmethod
     def cells(self, traverse=None): pass
 
@@ -50,9 +54,6 @@ class CellSpace(object):
 
     @abstractmethod
     def distance(self, cell, r=1): pass
-
-    @abstractmethod
-    def clear(self): pass
 
     @staticmethod
     def tr_random(cells):
@@ -65,31 +66,69 @@ class CellSpace(object):
             remaining.rotate(choice(range(len(remaining))))
             yield remaining.pop()
 
+#TODO: rename :)
+def propertinator(properties):
+    """
+    Take a property bundle and return a slotted property class.
+    A property bundle is either:
+    * a list of property names
+    * a list of tuples (property, defaulf value)
+    * same as a dictionary
+    * a mix thereor.
 
-class Grid(CellSpace):
+    Example: (("heat",0),"peace",{"love":"all you need"})
+    """
+    if not properties:
+        return lambda: None
+    property_names = []
+    defaults = {}
+    for p in properties:
+        if not hasattr(p, "__iter__"):
+            property_names.append(p)
+        elif hasattr(p, "iteritems"):
+            for k,v in p.iteritems():
+                property_names.append(k)
+            defaults.update(p)
+        elif len(p) == 2:
+            k,v = p
+            property_names.append(k)
+            defaults[k] = v
+        else:
+            raise Exception("Invalid property structure: %s" % repr(properties))
+
+    class PropertyClass(object):
+        __slots__ = tuple(property_names + ["_defaults"])
+        _defaults = defaults
+
+        def __init__(self):
+            for k,v in self._defaults.iteritems():
+                setattr(self,k,v)
+
+    return PropertyClass
+
+class GridSpace(CellSpace):
     """
     CellSpace implemented as N-dimensional rectangular grid.
     """
 
-    def __init__(self, dimensions=(100,100), names=None, cell_class=Cell):
+    def __init__(self, dimensions=(100,100), names=None, cell_fn=Cell):
         """
         dimensions: list of dimensions
         names:      optional list of dimension names
-        cell_fn:    a function that returns a new cell instance
+        properties: cell properties, with optional default values
 
         Ex. (100,100,20) for a 3-dimensional 100x100x20 grid.
         """
         self._dimensions = dimensions
         self._dimension_names = names
-        self.cell_class = cell_class
         # The grid is a dict keyed by coordinate tuple and valued by the Cell
         # object (for now).
-        self.cell_map = dict((tuple(xyz), cell_class()) for xyz in product(*imap(xrange, dimensions)))
-        self.inverted_cell_map = dict((v,k) for k,v in self.cell_map.iteritems())
 
-    def clear(self):
-        map(cell_class.clear, self.cells())
-        # neighbors do not change, so neighbors() can stay memoized with a prefilled cache
+        # Important to note: functions inside the tuple are evaluated for
+        # _every_ tuple, not just once.
+        self.cell_map = dict((tuple(xyz), cell_fn())
+            for xyz in product(*imap(xrange, dimensions)))
+        self.inverted_cell_map = dict((v,k) for k,v in self.cell_map.iteritems())
 
     def __getitem__(self, xyz): return self.cell_map[xyz]
 

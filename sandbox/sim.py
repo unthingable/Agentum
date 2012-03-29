@@ -5,7 +5,7 @@ Example simulation setup and agent code that uses the existing spaces.
 #import grid
 import logging
 import sys
-from grid import CellSpace, Grid
+from grid import CellSpace, GridSpace
 from operator import attrgetter
 
 class Agent(object):
@@ -70,8 +70,13 @@ def diffuse(grid):
             n.heat += heat_gain
         cell.heat *= 1 - heat_loss
 
+class BugCell(object):
+    __slots__ = "bug", "heat"
+    def __init__(self):
+        self.heat = 0
+
 def run_simulation(steps=50):
-    g = Grid()
+    g = GridSpace(cell_fn=BugCell)
     LOG.info("Starting simulation.")
     bugs = init_grid(g)
     for step in range(steps):

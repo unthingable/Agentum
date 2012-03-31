@@ -8,7 +8,7 @@ class GridTest(unittest.TestCase):
         class Cell(object):
             def __init__(self):
                 self.heat = 0
-        self.g = GridSpace((100,100), node_fn=Cell)
+        self.g = GridSpace((100,100), cell_fn=Cell)
 
     def testCreate(self):
         GridSpace()
@@ -18,12 +18,24 @@ class GridTest(unittest.TestCase):
 
 class SimTest(unittest.TestCase):
     def setUp(self):
-        self.g = GridSpace(node_fn=sim.BugNode)
+        self.g = GridSpace(cell_fn=sim.BugNode)
         self.bugs = sim.init_grid(self.g, numbugs=20)
 
     def testSimStep(self):
         for bug in self.bugs:
             sim.step_bug(self.g, bug)
+
+    def testGraph(self):
+        return
+        import networkx as nx
+        self.g = nx.geographical_threshold_graph(100,1.2)
+        for node in self.g.nodes_iter():
+            self.g[node] = sim.BugNode()
+        self.bugs = sim.init_grid(self.g, numbugs=20)
+
+    def testGraphStep(self):
+        return
+        self.testSimStep()
 
 if __name__=="__main__":
     unittest.main()

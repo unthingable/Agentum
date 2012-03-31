@@ -3,7 +3,7 @@ Example simulation setup and agent code that uses the existing spaces.
 """
 import logging
 import sys
-from grid import NodeSpace, GridSpace
+from grid import CellSpace, GridSpace
 from operator import attrgetter
 
 HEAT = 1.1
@@ -21,7 +21,7 @@ def init_grid(grid, numbugs=20):
     bugs = set()
     numbugs = min(len(grid), numbugs)
     # scatter bugs around
-    nodes = grid.nodes(NodeSpace.tr_random)
+    nodes = grid.cells(CellSpace.tr_random)
     while len(bugs) < numbugs:
         node = nodes.next()
         bug = Bug()
@@ -57,7 +57,7 @@ def diffuse(grid):
     cardinality = len(grid.dimensions)
     heat_distribution_coeff = 2 ** cardinality
     heat_loss = 0.2
-    for node in grid.nodes():
+    for node in grid.cells():
         heat_gain = (node.heat * heat_loss) / heat_distribution_coeff
         for n in grid.neighbors(node):
             n.heat += heat_gain
@@ -69,7 +69,7 @@ class BugNode(object):
         self.heat = 0
 
 def run_simulation(steps=50):
-    g = GridSpace(node_fn=BugNode)
+    g = GridSpace(cell_fn=BugNode)
     LOG.info("Starting simulation.")
     bugs = init_grid(g)
     for step in range(steps):

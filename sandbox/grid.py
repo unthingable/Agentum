@@ -14,7 +14,7 @@ def memoize(f):
             return cache[args]
     return decorated_function
 
-class Node(object):
+class Cell(object):
     """
     The basic element of our world. Must be hashable.
     """
@@ -31,10 +31,10 @@ class SparseSpace(object):
     Agents can inspect r-neighborhoods and move.
     """
 
-class NodeSpace(object):
+class CellSpace(object):
     """
     Discrete space, to look around and travel through.
-    Space is just a fabric onto which nodes are laid.
+    Space is just a fabric onto which cells are laid.
 
     Space's responsibility is:
     * arranging nodes in a structure
@@ -42,12 +42,12 @@ class NodeSpace(object):
     * providing spatial measurements (distance)
 
     Space is not responsible for knowing where agents are, where they are
-    and what happens inside the nodes -- this is up to the simulation.
+    and what happens inside the cells -- this is up to the simulation.
     """
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def nodes(self, traverse=None): pass
+    def cells(self, traverse=None): pass
 
     @abstractmethod
     def neighbors(self, node, r=1): pass
@@ -106,16 +106,16 @@ def propertinator(properties):
 
     return PropertyClass
 
-class GridSpace(NodeSpace):
+class GridSpace(CellSpace):
     """
-    CellSpace implemented as N-dimensional rectangular grid.
+    GridSpace implemented as N-dimensional rectangular grid.
     """
 
-    def __init__(self, dimensions=(100,100), names=None, node_fn=Node):
+    def __init__(self, dimensions=(100,100), names=None, cell_fn=Cell):
         """
         dimensions: list of dimensions
         names:      optional list of dimension names
-        node_fn:    node creator function (or class)
+        cell_fn:    cell creator function (or class)
 
         Ex. (100,100,20) for a 3-dimensional 100x100x20 grid.
         """
@@ -126,27 +126,33 @@ class GridSpace(NodeSpace):
 
         # Important to note: functions inside the tuple are evaluated for
         # _every_ tuple, not just once.
-        self.node_map = dict((tuple(xyz), node_fn())
+        self.cell_map = dict((tuple(xyz), cell_fn())
             for xyz in product(*imap(xrange, dimensions)))
-        self.inverted_node_map = dict((v,k) for k,v in self.node_map.iteritems())
+        self.inverted_cell_map = dict((v,k) for k,v in self.cell_map.iteritems())
 
-    def __getitem__(self, xyz): return self.node_map[xyz]
+    def __getitem__(self, xyz): return self.cell_map[xyz]
 
-    def nodes(self, traverse=None):
+    def __setitem__(self, xyz, item):
+        if xyz in self.cell_map:
+            del self.inverted_cell_map[self.cell_map[xyz]]
+        self.cell_map[xyz] = item
+        self.inverted_cell_map[item] = xyz
+
+    def cells(self, traverse=None):
         if not traverse:
-            return self.node_map.itervalues()
+            return self.cell_map.itervalues()
         else:
-            return traverse(self.node_map.itervalues())
+            return traverse(self.cell_map.itervalues())
 
     @property
     def dimensions(self): return self._dimensions
 
     def __len__(self):
-        return len(self.node_map)
+        return len(self.cell_map)
 
     # without memoization this can be a little slow
     def _get_neighbor_indexes(self, node, r=1):
-        xyz = self.inverted_node_map[node]
+        xyz = self.inverted_cell_map[node]
         ranges = (xrange(x-r,x+r+1) for x in xyz)
         # wraparound modulo dimension
         ranges = (set(x%y for x in r) for r,y in izip(ranges, self.dimensions))
@@ -155,10 +161,11 @@ class GridSpace(NodeSpace):
         return indexes
 
     @memoize
-    def neighbors(self, node, r=1):
-        indexes = self._get_neighbor_indexes(node, r)
-        return imap(self.node_map.get, indexes)
+    def neighbors(self, cell, r=1):
+        indexes = self._get_neighbor_indexes(cell, r)
+        return imap(self.cell_map.get, indexes)
 
     def distance(self, node1, node2):
-        a,b = [self.inverted_node_map[x] for x in (a,b)]
+        a,b = [self.inverted_cell_map[x] for x in (a,b)]
         return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))
+

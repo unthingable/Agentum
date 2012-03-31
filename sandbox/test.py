@@ -8,7 +8,7 @@ class GridTest(unittest.TestCase):
         class Cell(object):
             def __init__(self):
                 self.heat = 0
-        self.g = GridSpace((100,100), cell_fn=Cell)
+        self.g = GridSpace((100,100), node_fn=Cell)
 
     def testCreate(self):
         GridSpace()
@@ -18,7 +18,7 @@ class GridTest(unittest.TestCase):
 
 class SimTest(unittest.TestCase):
     def setUp(self):
-        self.g = GridSpace(cell_fn=sim.BugCell)
+        self.g = GridSpace(node_fn=sim.BugNode)
         self.bugs = sim.init_grid(self.g, numbugs=20)
 
     def testSimStep(self):

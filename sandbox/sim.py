@@ -3,14 +3,14 @@ Example simulation setup and agent code that uses the existing spaces.
 """
 import logging
 import sys
-from grid import CellSpace, GridSpace
+from grid import NodeSpace, GridSpace
 from operator import attrgetter
 
 HEAT = 1.1
 TOLERANCE = 2
 
-class Bug(Agent):
-    __slots__ = "name", "cell"
+class Bug(object):
+    __slots__ = "name", "node"
 
 logging.basicConfig()
 LOG = logging.getLogger("sim")
@@ -21,33 +21,33 @@ def init_grid(grid, numbugs=20):
     bugs = set()
     numbugs = min(len(grid), numbugs)
     # scatter bugs around
-    cells = grid.cells(CellSpace.tr_random)
+    nodes = grid.nodes(NodeSpace.tr_random)
     while len(bugs) < numbugs:
-        cell = cells.next()
+        node = nodes.next()
         bug = Bug()
         bug.name = len(bugs)
-        bug.cell = cell    # backlink
+        bug.node = node    # backlink
         bugs.add(bug)
-        cell.bug = bug
+        node.bug = bug
     return bugs
 
 def step_bug(grid, bug):
     # emit heat.
-    cell = bug.cell
-    cell.heat += HEAT
-    if cell.heat > TOLERANCE:
-        # FFFUUUUUuuu!. Find a cell to migrate to.
-        neighbors = grid.neighbors(bug.cell)
-        for new_cell in sorted(neighbors, key=attrgetter("heat")):
-            if not new_cell.bug:
+    node = bug.node
+    node.heat += HEAT
+    if node.heat > TOLERANCE:
+        # FFFUUUUUuuu!. Find a node to migrate to.
+        neighbors = grid.neighbors(bug.node)
+        for new_node in sorted(neighbors, key=attrgetter("heat")):
+            if not new_node.bug:
                 # yay, move
-                new_cell.bug = bug
-                cell.bug = None
-                bug.cell = new_cell
-                # cheat a little. TODO: give cells __unicode__()
+                new_node.bug = bug
+                node.bug = None
+                bug.node = new_node
+                # cheat a little. TODO: give nodes __unicode__()
                 LOG.debug("%s: %s -> %s" % (bug.name,
-                    grid.inverted_cell_map[cell],
-                    grid.inverted_cell_map[new_cell]))
+                    grid.inverted_node_map[node],
+                    grid.inverted_node_map[new_node]))
                 break
 
 def diffuse(grid):
@@ -57,19 +57,19 @@ def diffuse(grid):
     cardinality = len(grid.dimensions)
     heat_distribution_coeff = 2 ** cardinality
     heat_loss = 0.2
-    for cell in grid.cells():
-        heat_gain = (cell.heat * heat_loss) / heat_distribution_coeff
-        for n in grid.neighbors(cell):
+    for node in grid.nodes():
+        heat_gain = (node.heat * heat_loss) / heat_distribution_coeff
+        for n in grid.neighbors(node):
             n.heat += heat_gain
-        cell.heat *= 1 - heat_loss
+        node.heat *= 1 - heat_loss
 
-class BugCell(object):
+class BugNode(object):
     __slots__ = "bug", "heat"
     def __init__(self):
         self.heat = 0
 
 def run_simulation(steps=50):
-    g = GridSpace(cell_fn=BugCell)
+    g = GridSpace(node_fn=BugNode)
     LOG.info("Starting simulation.")
     bugs = init_grid(g)
     for step in range(steps):

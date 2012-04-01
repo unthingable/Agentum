@@ -159,7 +159,7 @@ class GridSpace(CellSpace):
     @memoize
     def neighbors(self, index, r=1):
         for idx in self._get_neighbor_indexes(index, r):
-            yield self.cell_map[idx]
+            yield idx,self.cell_map[idx]
 
     def distance(self, a, b):
         #a,b = [self.inverted_cell_map[x] for x in (a,b)]

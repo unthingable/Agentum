@@ -18,7 +18,7 @@ class GridTest(unittest.TestCase):
 
 class SimTest(unittest.TestCase):
     def setUp(self):
-        self.g = GridSpace(cell_fn=sim.BugNode)
+        self.g = GridSpace(cell_fn=sim.BugCell)
         self.bugs = sim.init_grid(self.g, numbugs=20)
 
     def testSimStep(self):
@@ -30,7 +30,7 @@ class SimTest(unittest.TestCase):
         import networkx as nx
         self.g = nx.geographical_threshold_graph(100,1.2)
         for node in self.g.nodes_iter():
-            self.g[node] = sim.BugNode()
+            self.g[node] = sim.BugCell()
         self.bugs = sim.init_grid(self.g, numbugs=20)
 
     def testGraphStep(self):

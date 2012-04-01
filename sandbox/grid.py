@@ -56,12 +56,12 @@ class CellSpace(object):
 #    def distance(self, node, r=1): pass
 
     @staticmethod
-    def tr_random(nodes):
+    def tr_random(items):
         """
         Random node space traversal. All nodes guaranteed to be visited once.
         """
         from collections import deque
-        remaining = deque(nodes)
+        remaining = deque(items)
         while remaining:
             remaining.rotate(choice(range(len(remaining))))
             yield remaining.pop()
@@ -140,9 +140,9 @@ class GridSpace(CellSpace):
 
     def cells(self, traverse=None):
         if not traverse:
-            return self.cell_map.itervalues()
+            return self.cell_map.iteritems()
         else:
-            return traverse(self.cell_map.itervalues())
+            return traverse(self.cell_map.iteritems())
 
     @property
     def dimensions(self): return self._dimensions
@@ -162,8 +162,8 @@ class GridSpace(CellSpace):
 
     @memoize
     def neighbors(self, cell, r=1):
-        indexes = self._get_neighbor_indexes(cell, r)
-        return imap(self.cell_map.get, indexes)
+        for index in self._get_neighbor_indexes(cell, r):
+            yield self.cell_map[index]
 
     def distance(self, node1, node2):
         a,b = [self.inverted_cell_map[x] for x in (a,b)]

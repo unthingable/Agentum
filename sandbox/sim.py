@@ -6,7 +6,7 @@ import sys
 from grid import CellSpace, GridSpace
 from operator import attrgetter
 
-HEAT = 3.5
+HEAT = 0.3
 TOLERANCE = 2
 MAX_HEAT = 0
 
@@ -59,7 +59,7 @@ def diffuse(grid):
     """
     cardinality = len(grid.dimensions)
     heat_distribution_coeff = 2 ** cardinality
-    heat_loss = 0.2
+    heat_loss = 0.1
     for idx, cell in grid.cells():
         heat_gain = (cell.heat * heat_loss) / heat_distribution_coeff
         for idx,n in grid.neighbors(idx):

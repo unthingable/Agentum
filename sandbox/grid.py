@@ -50,7 +50,7 @@ class CellSpace(object):
     def cells(self, traverse=None): pass
 
     @abstractmethod
-    def neighbors(self, node, r=1): pass
+    def neighbors(self, index, r=1): pass
 
 #    @abstractmethod
 #    def distance(self, node, r=1): pass
@@ -128,15 +128,11 @@ class GridSpace(CellSpace):
         # _every_ tuple, not just once.
         self.cell_map = dict((tuple(xyz), cell_fn())
             for xyz in product(*imap(xrange, dimensions)))
-        self.inverted_cell_map = dict((v,k) for k,v in self.cell_map.iteritems())
 
     def __getitem__(self, xyz): return self.cell_map[xyz]
 
     def __setitem__(self, xyz, item):
-        if xyz in self.cell_map:
-            del self.inverted_cell_map[self.cell_map[xyz]]
         self.cell_map[xyz] = item
-        self.inverted_cell_map[item] = xyz
 
     def cells(self, traverse=None):
         if not traverse:
@@ -151,8 +147,7 @@ class GridSpace(CellSpace):
         return len(self.cell_map)
 
     # without memoization this can be a little slow
-    def _get_neighbor_indexes(self, node, r=1):
-        xyz = self.inverted_cell_map[node]
+    def _get_neighbor_indexes(self, xyz, r=1):
         ranges = (xrange(x-r,x+r+1) for x in xyz)
         # wraparound modulo dimension
         ranges = (set(x%y for x in r) for r,y in izip(ranges, self.dimensions))
@@ -161,9 +156,9 @@ class GridSpace(CellSpace):
         return indexes
 
     @memoize
-    def neighbors(self, cell, r=1):
-        for index in self._get_neighbor_indexes(cell, r):
-            yield self.cell_map[index]
+    def neighbors(self, index, r=1):
+        for idx in self._get_neighbor_indexes(index, r):
+            yield self.cell_map[idx]
 
     def distance(self, node1, node2):
         a,b = [self.inverted_cell_map[x] for x in (a,b)]

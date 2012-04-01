@@ -37,5 +37,8 @@ class SimTest(unittest.TestCase):
         return
         self.testSimStep()
 
+    def testRunSim(self):
+        sim.run_simulation(steps=1)
+
 if __name__=="__main__":
     unittest.main()

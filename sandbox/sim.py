@@ -10,7 +10,7 @@ HEAT = 1.1
 TOLERANCE = 2
 
 class Bug(object):
-    __slots__ = "name", "cell"
+    __slots__ = "name", "idx"
 
 logging.basicConfig()
 LOG = logging.getLogger("sim")
@@ -26,18 +26,18 @@ def init_grid(grid, numbugs=20):
         idx, cell = cells.next()
         bug = Bug()
         bug.name = len(bugs)
-        bug.cell = cell    # backlink
+        bug.idx = idx    # backlink
         bugs.add(bug)
         cell.bug = bug
     return bugs
 
 def step_bug(grid, bug):
     # emit heat.
-    cell = bug.cell
+    cell = grid[bug.idx]
     cell.heat += HEAT
     if cell.heat > TOLERANCE:
         # FFFUUUUUuuu!. Find a node to migrate to.
-        neighbors = grid.neighbors(bug.node)
+        neighbors = grid.neighbors(bug.idx)
         for idx, new_cell in sorted(neighbors, key=lambda k,v: v['heat']):
             if not new_cell.bug:
                 # yay, move
@@ -45,9 +45,7 @@ def step_bug(grid, bug):
                 cell.bug = None
                 bug.cell = new_cell
                 # cheat a little. TODO: give nodes __unicode__()
-                LOG.debug("%s: %s -> %s" % (bug.name,
-                    grid.inverted_node_map[cell],
-                    grid.inverted_node_map[new_cell]))
+                LOG.debug("%s -> %s" % (bug.name, idx))
                 break
 
 def diffuse(grid):
@@ -59,7 +57,7 @@ def diffuse(grid):
     heat_loss = 0.2
     for idx, cell in grid.cells():
         heat_gain = (cell.heat * heat_loss) / heat_distribution_coeff
-        for n in grid.neighbors(cell):
+        for n in grid.neighbors(idx):
             n.heat += heat_gain
         cell.heat *= 1 - heat_loss
 

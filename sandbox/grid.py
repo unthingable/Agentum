@@ -1,6 +1,7 @@
 from itertools import product, izip, imap, ifilter
 from collections import namedtuple
 from abc import abstractmethod, ABCMeta
+from operator import itemgetter
 from random import choice
 import math
 
@@ -160,7 +161,38 @@ class GridSpace(CellSpace):
         for idx in self._get_neighbor_indexes(index, r):
             yield self.cell_map[idx]
 
-    def distance(self, node1, node2):
-        a,b = [self.inverted_cell_map[x] for x in (a,b)]
+    def distance(self, a, b):
+        #a,b = [self.inverted_cell_map[x] for x in (a,b)]
         return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))
 
+
+class GraphSpace(CellSpace):
+    def __init__(self, graph, cell_fn=Cell, cell_key="_cell"):
+        """
+        Create a GraphSpace from an existing graph.
+        """
+        self.cell_key = cell_key
+        self.graph = graph
+
+        if cell_fn:
+            for node, data in self.graph.nodes_iter(data=True):
+                data[self.cell_key] = cell_fn()
+
+    def __getitem__(self, index): return self.graph.node[index][self.cell_key]
+
+    def __setitem__(self, index, item):
+        self.graph.node[index][self.cell_key] = item
+
+    def __len__(self):
+        return self.graph.size()
+
+    def cells(self, traverse=None):
+        for k,v in self.graph.nodes_iter(data=True):
+            yield k,v[self.cell_key]
+        #TODO: traverse function
+
+    def neighbors(self, index, r=1):
+        if r==1:
+            return self.graph.neighbors(index)
+        else:
+            raise Exception("Implement r-neighborhoods for GraphSpace first.")

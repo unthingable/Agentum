@@ -6,6 +6,9 @@ from random import choice
 import math
 
 def memoize(f):
+    """
+    Warning: do not return iterators from memoized functions!
+    """
     cache = {}
     def decorated_function(*args):
         if args in cache:
@@ -158,8 +161,8 @@ class GridSpace(CellSpace):
 
     @memoize
     def neighbors(self, index, r=1):
-        for idx in self._get_neighbor_indexes(index, r):
-            yield idx,self.cell_map[idx]
+        indexes = self._get_neighbor_indexes(index, r)
+        return [(idx, self.cell_map[idx]) for idx in indexes]
 
     def distance(self, a, b):
         #a,b = [self.inverted_cell_map[x] for x in (a,b)]
@@ -191,8 +194,9 @@ class GraphSpace(CellSpace):
             yield k,v[self.cell_key]
         #TODO: traverse function
 
+    @memoize
     def neighbors(self, index, r=1):
         if r==1:
-            return self.graph.neighbors(index)
+            return tuple(self.graph.neighbors(index))
         else:
             raise Exception("Implement r-neighborhoods for GraphSpace first.")

@@ -3,6 +3,7 @@ Example simulation setup and agent code that uses the existing spaces.
 """
 import logging
 import sys
+import time
 from grid import CellSpace, GridSpace
 from operator import attrgetter
 
@@ -11,7 +12,9 @@ TOLERANCE = 2
 MAX_HEAT = 0
 
 class Bug(object):
-    __slots__ = "name", "idx"
+    __slots__ = "name", "idx", "happiness"
+    def __init__(self):
+        self.happiness = 0
 
 logging.basicConfig()
 LOG = logging.getLogger("sim")
@@ -41,7 +44,9 @@ def step_bug(grid, bug):
         MAX_HEAT = cell.heat
         #LOG.debug("max heat: %s" % cell.heat)
     if cell.heat > TOLERANCE:
-        # FFFUUUUUuuu!. Find a node to migrate to.
+        # FFFUUUUUuuu!
+        bug.happiness -= 1
+        # Find a node to migrate to.
         neighbors = grid.neighbors(bug.idx)
         for idx, new_cell in sorted(neighbors, key=lambda (k,v): v.heat):
             if not new_cell.bug:
@@ -52,6 +57,9 @@ def step_bug(grid, bug):
                 # cheat a little. TODO: give nodes __unicode__()
                 LOG.debug("%s -> %s" % (bug.name, idx))
                 break
+    else:
+        # A bug that does not move is a happier bug.
+        bug.happiness += 1
 
 def diffuse(grid):
     """
@@ -72,17 +80,22 @@ class BugCell(object):
         self.heat = 0
         self.bug = None
 
-def run_simulation(steps=50):
+import draw as drawlib
+def run_simulation(steps=50, draw=False, sleep=0):
     g = GridSpace(cell_fn=BugCell)
     LOG.info("Starting simulation.")
     bugs = init_grid(g)
     for step in range(steps):
         LOG.info("Step: %s" % step)
+        diffuse(g)
         for bug in bugs:
             sys.stdout.write('.')
             sys.stdout.flush()
             step_bug(g, bug)
-        diffuse(g)
+        if draw:
+            drawlib.draw_grid(g)
+        if sleep:
+            time.sleep(sleep)
     LOG.info("Done! Max heat: %s" % MAX_HEAT)
     return g
 

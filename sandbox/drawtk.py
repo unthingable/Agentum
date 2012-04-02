@@ -9,8 +9,8 @@ canvas = None
 root = None
 cell_size = 3
 cells = {}
-def draw_grid(grid):
-    # 2D grid only.
+
+def draw_init(grid):
     global canvas, root
     if not canvas:
         dim = grid.dimensions
@@ -29,9 +29,11 @@ def draw_grid(grid):
                 #fill = 'red',
                 fill = heat_to_color(cell.heat)
             )
-    else:
-        for idx, cell in grid.cells():
-            canvas.itemconfigure(cells[idx], fill = heat_to_color(cell.heat))
+
+def draw_grid(grid):
+    # 2D grid only.
+    for idx, cell in grid.cells():
+        canvas.itemconfigure(cells[idx], fill = heat_to_color(cell.heat))
     root.update()
     #tk.mainloop()
 

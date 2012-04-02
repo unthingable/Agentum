@@ -7,7 +7,7 @@ import time
 from grid import CellSpace, GridSpace
 from operator import attrgetter
 
-HEAT = 1.3
+HEAT = 2.3
 TOLERANCE = 2
 MAX_HEAT = 0
 
@@ -66,14 +66,19 @@ def diffuse(grid):
     Rudimentary heat diffusion.
     Suppose half the lost heat radiates and the other half transmits.
     """
-    radiation_loss_coeff = 0.001
-    transmission_coeff = 0.2
+    transmission_coeff = 0.3
+    # allow the grid to cool down
+    sink_coeff = 0.1
     for idx, cell in grid.cells():
+        # how much total heat the cell radiates
+        emission_loss = cell.heat * transmission_coeff
         neighbors = grid.neighbors(idx)
-        transmission_loss = cell.heat * transmission_coeff
-        for idx,n in neighbors:
-            n.heat += transmission_loss / len(neighbors)
-        cell.heat -= (cell.heat * radiation_loss_coeff) + transmission_loss
+        for nidx,n in neighbors:
+            # Only colder cells (positive delta) will absorb the heat.
+            # Sum of transmissions cannot be greater that the total emission.
+            delta = cell.heat - n.heat
+            n.heat += emission_loss / len(neighbors)
+        cell.heat -= emission_loss + (cell.heat * sink_coeff)
 
 class BugCell(object):
     __slots__ = "bug", "heat"
@@ -81,11 +86,14 @@ class BugCell(object):
         self.heat = 0
         self.bug = None
 
-import draw as drawlib
-def run_simulation(steps=50, draw=False, sleep=0):
+import drawtk as drawlib
+def run_simulation(steps=50, numbugs=20, draw=False, sleep=0):
     g = GridSpace(cell_fn=BugCell)
     LOG.info("Starting simulation.")
-    bugs = init_grid(g)
+    bugs = init_grid(g, numbugs=numbugs)
+
+    drawlib.draw_init(g)
+
     for step in range(steps):
         LOG.info("Step: %s" % step)
         diffuse(g)

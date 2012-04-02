@@ -7,7 +7,7 @@ import time
 from grid import CellSpace, GridSpace
 from operator import attrgetter
 
-HEAT = 0.3
+HEAT = 1.3
 TOLERANCE = 2
 MAX_HEAT = 0
 
@@ -64,15 +64,16 @@ def step_bug(grid, bug):
 def diffuse(grid):
     """
     Rudimentary heat diffusion.
+    Suppose half the lost heat radiates and the other half transmits.
     """
-    cardinality = len(grid.dimensions)
-    heat_distribution_coeff = 2 ** cardinality
-    heat_loss = 0.1
+    radiation_loss_coeff = 0.001
+    transmission_coeff = 0.2
     for idx, cell in grid.cells():
-        heat_gain = (cell.heat * heat_loss) / heat_distribution_coeff
-        for idx,n in grid.neighbors(idx):
-            n.heat += heat_gain
-        cell.heat *= 1 - heat_loss
+        neighbors = grid.neighbors(idx)
+        transmission_loss = cell.heat * transmission_coeff
+        for idx,n in neighbors:
+            n.heat += transmission_loss / len(neighbors)
+        cell.heat -= (cell.heat * radiation_loss_coeff) + transmission_loss
 
 class BugCell(object):
     __slots__ = "bug", "heat"

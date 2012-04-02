@@ -56,14 +56,16 @@ def step_bug(grid, bug):
     if cell.heat > MAX_HEAT:
         MAX_HEAT = cell.heat
         #LOG.debug("max heat: %s" % cell.heat)
-    if cell.heat > TOLERANCE_MAX or cell.heat < TOLERANCE_MIN:
+
+    too_hot = cell.heat > TOLERANCE_MAX
+    too_cold = cell.heat < TOLERANCE_MIN
+    if too_hot or too_cold:
         # FFFUUUUUuuu!
         bug.happiness -= 1
         # Find a node to migrate to.
         neighbors = grid.neighbors(bug.idx)
-        for idx, new_cell in sorted(neighbors, key=lambda (k,v): v.heat):
-            if ((cell.heat < TOLERANCE_MIN > new_cell.heat) or
-                cell.heat > TOLERANCE_MAX):
+        for idx, new_cell in sorted(neighbors, key=lambda (k,v): v.heat, reverse=too_cold):
+            if TOLERANCE_MIN < new_cell.heat < TOLERANCE_MAX:
                 if not new_cell.bug:
                     bug, idx = move_bug(grid, bug, idx)
                     break

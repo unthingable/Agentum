@@ -19,7 +19,7 @@ class Bug(object):
 
 logging.basicConfig()
 LOG = logging.getLogger("sim")
-LOG.setLevel(logging.DEBUG)
+#LOG.setLevel(logging.DEBUG)
 
 from random import choice, shuffle
 def init_grid(grid, numbugs=20):
@@ -110,8 +110,8 @@ def run_simulation(steps=50, numbugs=300, draw=False, sleep=0):
         LOG.info("Step: %s" % step)
         diffuse(g)
         for bug in bugs:
-            sys.stdout.write('.')
-            sys.stdout.flush()
+            #sys.stdout.write('.')
+            #sys.stdout.flush()
             step_bug(g, bug)
         if draw:
             drawlib.draw_grid(g)
@@ -121,4 +121,6 @@ def run_simulation(steps=50, numbugs=300, draw=False, sleep=0):
     return g
 
 if __name__ == "__main__":
-    run_simulation()
+    print "Running Heatbugs simulation for 1000 steps!"
+    run_simulation(1000,draw=True)
+    raw_input("Press a key to exit.")

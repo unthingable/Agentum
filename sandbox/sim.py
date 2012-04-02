@@ -7,8 +7,9 @@ import time
 from grid import CellSpace, GridSpace
 from operator import attrgetter
 
-HEAT = 2.3
-TOLERANCE = 2
+HEAT = 1.5
+TOLERANCE_MAX = 2
+TOLERANCE_MIN = 0.4
 MAX_HEAT = 0
 
 class Bug(object):
@@ -35,6 +36,18 @@ def init_grid(grid, numbugs=20):
         cell.bug = bug
     return bugs
 
+
+def move_bug(grid, bug, idx):
+    # yay, move
+    cell = grid[bug.idx]
+    new_cell = grid[idx]
+    new_cell.bug = bug
+    cell.bug = None
+    bug.idx = idx
+    LOG.debug("%s -> %s" % (bug.name, idx))
+    return bug, idx
+
+
 def step_bug(grid, bug):
     # emit heat.
     cell = grid[bug.idx]
@@ -43,20 +56,17 @@ def step_bug(grid, bug):
     if cell.heat > MAX_HEAT:
         MAX_HEAT = cell.heat
         #LOG.debug("max heat: %s" % cell.heat)
-    if cell.heat > TOLERANCE:
+    if cell.heat > TOLERANCE_MAX or cell.heat < TOLERANCE_MIN:
         # FFFUUUUUuuu!
         bug.happiness -= 1
         # Find a node to migrate to.
         neighbors = grid.neighbors(bug.idx)
         for idx, new_cell in sorted(neighbors, key=lambda (k,v): v.heat):
-            if not new_cell.bug:
-                # yay, move
-                new_cell.bug = bug
-                cell.bug = None
-                bug.idx = idx
-                # cheat a little. TODO: give nodes __unicode__()
-                LOG.debug("%s -> %s" % (bug.name, idx))
-                break
+            if ((cell.heat < TOLERANCE_MIN > new_cell.heat) or
+                cell.heat > TOLERANCE_MAX):
+                if not new_cell.bug:
+                    bug, idx = move_bug(grid, bug, idx)
+                    break
     else:
         # A bug that does not move is a happier bug.
         bug.happiness += 1

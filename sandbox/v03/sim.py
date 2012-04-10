@@ -100,7 +100,7 @@ class Heatbugs(Simulation):
         if too_hot or too_cold:
             # FFFUUUUUuuu!
             bug.happiness -= 1
-            # Find a node to migrate to.
+            # Find a cell to migrate to.
             neighbors = self.grid.neighbors(bug.idx)
             for idx, new_cell in sorted(neighbors, key=lambda (k,v): v.heat, reverse=too_cold):
                 if self.properties.t_min < new_cell.heat < self.properties.t_max:
@@ -114,12 +114,11 @@ class Heatbugs(Simulation):
     def diffuse(self):
         """
         Rudimentary heat diffusion.
-        Suppose half the lost heat radiates and the other half transmits.
         """
         transmission_coeff = 0.3
         # allow the grid to cool down
         sink_coeff = 0.1
-        for idx, cell in self.grid.cells():
+        for idx,cell in self.grid.cells():
             # how much total heat the cell radiates
             emission_loss = cell.heat * transmission_coeff
             neighbors = self.grid.neighbors(idx)
@@ -151,4 +150,5 @@ def run_simulation(steps=50, numbugs=20, draw=False, sleep=0):
     return s
 
 if __name__ == "__main__":
-    run_simulation()
+    run_simulation(steps=1000, numbugs=35, draw=True)
+    raw_input("Press any key to finish.")

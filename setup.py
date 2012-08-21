@@ -5,9 +5,13 @@ setup(
 	description="Multiagent modeling toolkit",
 	version="0.1",
 	author="Alex Kouznetsov, Max Tsvetovat",
-	packages=['agentum', 'agentum.sim'],
+	packages=['agentum'],
 	install_requires=[
         'setuptools',
-        'simplejson',
+#        'simplejson',
 	],
+    entry_points = """
+        [console_scripts]
+        agentum = agentum.runner:run
+    """
 )

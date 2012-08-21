@@ -1,8 +1,13 @@
+'''
+Space for agents to exist in
+'''
+
 from itertools import product, izip, imap, ifilter
 from collections import namedtuple
 from abc import abstractmethod, ABCMeta
 from operator import itemgetter
 from random import choice
+from functools import wraps
 import math
 
 def memoize(f):
@@ -10,6 +15,7 @@ def memoize(f):
     Warning: do not return iterators from memoized functions!
     """
     cache = {}
+    @wraps(f)
     def decorated_function(*args):
         if args in cache:
             return cache[args]
@@ -116,7 +122,7 @@ class GridSpace(CellSpace):
     GridSpace implemented as N-dimensional rectangular grid.
     """
 
-    def __init__(self, dimensions=(100,100), names=None, cell_fn=Cell):
+    def __init__(self, cell_fn, dimensions=(100,100), names=None):
         """
         dimensions: list of dimensions
         names:      optional list of dimension names
@@ -171,7 +177,7 @@ class GridSpace(CellSpace):
 
 
 class GraphSpace(CellSpace):
-    def __init__(self, graph, cell_fn=Cell, cell_key="_cell"):
+    def __init__(self, cell_fn, graph, cell_key="_cell"):
         """
         Create a GraphSpace from an existing graph.
         """

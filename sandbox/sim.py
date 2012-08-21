@@ -9,7 +9,7 @@ from grid import CellSpace, GridSpace
 from random import choice
 
 logging.basicConfig()
-LOG = logging.getLogger("sim")
+LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.DEBUG)
 
 class Simulation(object):
@@ -40,8 +40,6 @@ class Heatbugs(Simulation):
         self.bugs = set()
         self.max_heat = 0
 
-        # cheat a little: know some implementation details. This is GridSpace specific.
-        # replace for other cellspace
         self.cell_iter_random = cycle(self.grid.cells(CellSpace.tr_random))
         self.available_cell_iter = ifilter(lambda x: self._can_add(*x), self.cell_iter_random)
 

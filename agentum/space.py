@@ -16,12 +16,12 @@ def memoize(f):
     """
     cache = {}
     @wraps(f)
-    def decorated_function(*args):
-        if args in cache:
-            return cache[args]
+    def decorated_function(*args, **kwargs):
+        key = (args, tuple(kwargs.items()))
+        if key in cache:
+            return cache[key]
         else:
-            cache[args] = f(*args)
-            return cache[args]
+            return cache.setdefault(key, f(*args, **kwargs))
     return decorated_function
 
 # how about: a cell is responsible for communicating its state changes
@@ -61,7 +61,7 @@ class CellSpace(object):
     def cells(self, traverse=None): pass
 
     @abstractmethod
-    def neighbors(self, index, r=1): pass
+    def neighbors(self, cell, r=1): pass
 
 #    @abstractmethod
 #    def distance(self, node, r=1): pass
@@ -137,25 +137,27 @@ class GridSpace(CellSpace):
 
         # Important to note: functions inside the tuple are evaluated for
         # _every_ tuple, not just once.
-        self.cell_map = dict((tuple(xyz), cell_fn())
+        self.idx_cell_map = dict((tuple(xyz), cell_fn())
             for xyz in product(*imap(xrange, dimensions)))
+        self.cell_idx_map = dict((v,k) for k,v in self.idx_cell_map.iteritems())
 
-    def __getitem__(self, xyz): return self.cell_map[xyz]
+    # Expose coordinates
+    def __getitem__(self, xyz): return self.idx_cell_map[xyz]
 
     def __setitem__(self, xyz, item):
-        self.cell_map[xyz] = item
+        self.idx_cell_map[xyz] = item
 
     def cells(self, traverse=None):
         if not traverse:
-            return self.cell_map.iteritems()
+            return self.idx_cell_map.values()
         else:
-            return traverse(self.cell_map.iteritems())
+            return traverse(self.idx_cell_map.values())
 
     @property
     def dimensions(self): return self._dimensions
 
     def __len__(self):
-        return len(self.cell_map)
+        return len(self.idx_cell_map)
 
     # without memoization this can be a little slow
     def _get_neighbor_indexes(self, xyz, r=1):
@@ -167,43 +169,44 @@ class GridSpace(CellSpace):
         return indexes
 
     @memoize
-    def neighbors(self, index, r=1):
+    def neighbors(self, cell, r=1):
+        index = self.cell_idx_map[cell]
         indexes = self._get_neighbor_indexes(index, r)
-        return [(idx, self.cell_map[idx]) for idx in indexes]
+        return [self.idx_cell_map[idx] for idx in indexes]
 
     def distance(self, a, b):
-        #a,b = [self.inverted_cell_map[x] for x in (a,b)]
+        a,b = [self.cell_idx_map[x] for x in (a,b)]
         return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))
 
+# TODO: same cell index semantic as CellSpace
+# class GraphSpace(CellSpace):
+#     def __init__(self, cell_fn, graph, cell_key="_cell"):
+#         """
+#         Create a GraphSpace from an existing graph.
+#         """
+#         self.cell_key = cell_key
+#         self.graph = graph
 
-class GraphSpace(CellSpace):
-    def __init__(self, cell_fn, graph, cell_key="_cell"):
-        """
-        Create a GraphSpace from an existing graph.
-        """
-        self.cell_key = cell_key
-        self.graph = graph
+#         if cell_fn:
+#             for node, data in self.graph.nodes_iter(data=True):
+#                 data[self.cell_key] = cell_fn()
 
-        if cell_fn:
-            for node, data in self.graph.nodes_iter(data=True):
-                data[self.cell_key] = cell_fn()
+#     def __getitem__(self, index): return self.graph.node[index][self.cell_key]
 
-    def __getitem__(self, index): return self.graph.node[index][self.cell_key]
+#     def __setitem__(self, index, item):
+#         self.graph.node[index][self.cell_key] = item
 
-    def __setitem__(self, index, item):
-        self.graph.node[index][self.cell_key] = item
+#     def __len__(self):
+#         return self.graph.size()
 
-    def __len__(self):
-        return self.graph.size()
+#     def cells(self, traverse=None):
+#         for k,v in self.graph.nodes_iter(data=True):
+#             yield k,v[self.cell_key]
+#         #TODO: traverse function
 
-    def cells(self, traverse=None):
-        for k,v in self.graph.nodes_iter(data=True):
-            yield k,v[self.cell_key]
-        #TODO: traverse function
-
-    @memoize
-    def neighbors(self, index, r=1):
-        if r==1:
-            return tuple(self.graph.neighbors(index))
-        else:
-            raise Exception("Implement r-neighborhoods for GraphSpace first.")
+#     @memoize
+#     def neighbors(self, index, r=1):
+#         if r==1:
+#             return tuple(self.graph.neighbors(index))
+#         else:
+#             raise Exception("Implement r-neighborhoods for GraphSpace first.")

@@ -63,6 +63,21 @@ class CellSpace(object):
     @abstractmethod
     def neighbors(self, cell, r=1): pass
 
+    @abstractmethod
+    def find(self, agent): pass
+
+    @abstractmethod
+    def move(self, agent, cell): pass
+
+    @abstractmethod
+    def add_agent(self, agent, cell): pass
+
+    @abstractmethod
+    def del_agent(self, agent): pass
+
+    @abstractmethod
+    def agents(self, with_cells=False): pass
+
 #    @abstractmethod
 #    def distance(self, node, r=1): pass
 

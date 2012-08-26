@@ -42,6 +42,7 @@ def run(module, steps):
         for cell in sim.space.cells():
             for metaagent in sim.metaagents:
                 metaagent.run(sim, cell)
+        # This is a good place to emit state updates and such
 
 if __name__ == "__main__":
     options, args = parse_args()

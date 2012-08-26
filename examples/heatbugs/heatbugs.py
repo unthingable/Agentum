@@ -22,7 +22,6 @@ class config(Container):
     # runtime stuff
     max_heat = 0    # maximum heat observed
 
-bugs = set()
 
 # A cell can be anything: a dict, a list, an object, etc..
 # Here we use slots as an example of compact storage.

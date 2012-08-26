@@ -176,7 +176,7 @@ class GridSpace(CellSpace):
 
     # without memoization this can be a little slow
     def _get_neighbor_indexes(self, xyz, r=1):
-        ranges = (xrange(x-r,x+r+1) for x in xyz)
+        ranges = (xrange(x-r, x+r+1) for x in xyz)
         # wraparound modulo dimension
         ranges = (set(x%y for x in r) for r,y in izip(ranges, self.dimensions))
         # all the nodes except center
@@ -221,7 +221,7 @@ class GridSpace(CellSpace):
 
 #     @memoize
 #     def neighbors(self, index, r=1):
-#         if r==1:
+#         if r == 1:
 #             return tuple(self.graph.neighbors(index))
 #         else:
 #             raise Exception("Implement r-neighborhoods for GraphSpace first.")

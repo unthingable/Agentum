@@ -23,3 +23,5 @@ class Simulation(object):
 # Anything you want shared between agents goes here.
 class Container(object):
     pass
+
+# TODO: create a decorator to denote synchronized/exposed properties.

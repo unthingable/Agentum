@@ -36,6 +36,7 @@ class Bug(Agent):
     happiness = 0
 
     def run(self, simulation):
+        cell = simulation.space.find(self)
         cell.heat += config.heat
         if cell.heat > config.max_heat:
             config.max_heat = cell.heat
@@ -44,12 +45,12 @@ class Bug(Agent):
         too_cold = cell.heat < config.t_min
         if too_hot or too_cold:
             # FFFUUUUUuuu!
-            bug.happiness -= 1
+            self.happiness -= 1
 
             # Find a cell to migrate to.
             neighbors = simulation.space.neighbors(cell)
             for new_cell in sorted(neighbors,
-                                   key=lambda (k,v): v.heat,
+                                   key=lambda (v): v.heat,
                                    reverse=too_cold):
                 if (config.t_min < new_cell.heat < config.t_max
                     and not new_cell.bugs):
@@ -58,7 +59,7 @@ class Bug(Agent):
                     break
         else:
             # A bug that does not move is a happier bug.
-            bug.happiness += 1
+            self.happiness += 1
 
 class Dissipator(MetaAgent):
     def run(self, simulation, cell):

@@ -155,6 +155,7 @@ class GridSpace(CellSpace):
         self.idx_cell_map = dict((tuple(xyz), cell_fn())
             for xyz in product(*imap(xrange, dimensions)))
         self.cell_idx_map = dict((v,k) for k,v in self.idx_cell_map.iteritems())
+        self.agent_map = {}
 
     # Expose coordinates
     def __getitem__(self, xyz): return self.idx_cell_map[xyz]
@@ -192,6 +193,24 @@ class GridSpace(CellSpace):
     def distance(self, a, b):
         a,b = [self.cell_idx_map[x] for x in (a,b)]
         return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))
+
+    # TODO: there is probably a better way to expose the agent-cell map.
+    # Maybe expose it directly?
+    # Discuss which interface is more useful.
+    def find(self, agent):
+        return self.agent_map[agent]
+
+    def move(self, agent, cell):
+        self.agent_map[agent] = cell
+
+    def add_agent(self, agent, cell):
+        self.agent_map[agent] = cell
+
+    def del_agent(self, agent):
+        del self.agent_map[agent]
+
+    def agents(self, with_cells=False):
+        return self.agent_map.keys()
 
 # TODO: same cell index semantic as CellSpace
 # class GraphSpace(CellSpace):

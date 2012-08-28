@@ -5,7 +5,9 @@ from agentum.simulation import Simulation, Container
 from agentum.agent import MetaAgent
 from agentum.space import Cell, GridSpace as CellSpace
 
-log = logging.Logger(__name__)
+logging.basicConfig()
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 class config(Container):
     ignition = 0.3
@@ -30,18 +32,22 @@ class Forest(MetaAgent):
             if random() < config.fill:
                 cell.state = 'occupied'
 
-class ForestCell:
+class ForestCell(object):
     states = ['empty', 'occupied', 'burning']
     _state = 'empty'
+    point = None
 
     @property
     def state(self):
         return self._state
 
     @state.setter
-    def state(self, state):
-        log.debug("Cell %r %s" % (self, state))
-        self._state = state
+    def state(self, new_state):
+        log.debug("Cell %s: %s" % (self, new_state))
+        self._state = new_state
+
+    def __str__(self):
+        return "%s" % str(self.point)
 
 def setup(simulation):
     # Create space

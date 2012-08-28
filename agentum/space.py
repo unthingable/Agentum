@@ -10,6 +10,13 @@ from random import choice
 from functools import wraps
 import math
 
+import logging
+
+logging.basicConfig()
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
+
+
 def memoize(f):
     """
     Warning: do not return iterators from memoized functions!
@@ -154,8 +161,16 @@ class GridSpace(CellSpace):
         # _every_ tuple, not just once.
         self.idx_cell_map = dict((tuple(xyz), cell_fn())
             for xyz in product(*imap(xrange, dimensions)))
-        self.cell_idx_map = dict((v,k) for k,v in self.idx_cell_map.iteritems())
+        self.cell_idx_map = {}
+        for idx,cell in self.idx_cell_map.iteritems():
+            self.cell_idx_map[cell] = idx
+            # A simple shortcut, for now: a special attribute to let the
+            # cell know where it is.
+            if hasattr(cell, 'point'):
+                cell.point = idx
+        # self.cell_idx_map = dict((v,k) for k,v in self.idx_cell_map.iteritems())
         self.agent_map = {}
+        log.debug("Initialized space %s" % __name__)
 
     # Expose coordinates
     def __getitem__(self, xyz): return self.idx_cell_map[xyz]
@@ -201,6 +216,8 @@ class GridSpace(CellSpace):
         return self.agent_map[agent]
 
     def move(self, agent, cell):
+        # optimize later
+        log.debug("%s: -> %s" % (agent, self.cell_idx_map[cell]))
         self.agent_map[agent] = cell
 
     def add_agent(self, agent, cell):

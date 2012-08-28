@@ -1,5 +1,6 @@
 'Simulation runner'
 
+import imp
 import sys
 import os
 import pkgutil
@@ -8,7 +9,6 @@ import optparse
 from agentum.simulation import Simulation
 
 log = logging.Logger(__name__)
-
 
 def parse_args():
     usage = "usage: %prog [options] [file]"
@@ -21,7 +21,6 @@ def parse_args():
     options, args = parser.parse_args()
 
     return options, args
-
 
 def run(module, steps):
     setup = getattr(module, 'setup', None)
@@ -44,13 +43,13 @@ def run(module, steps):
                 metaagent.run(sim, cell)
         # This is a good place to emit state updates and such
 
-if __name__ == "__main__":
+def run_main():
     options, args = parse_args()
     simmodule = args[0]
     dirname = '.'
     if os.path.isfile(simmodule):
-        dirname = os.path.dirname(simmodule)
-        os.chdir(dirname)
-        module = __import__(os.path.basename(simmodule).replace('.py'))
+        dirname = os.path.dirname(simmodule) or dirname
+        module_name = os.path.basename(simmodule).replace('.py','')
+        mm = imp.find_module(module_name)
+        module = imp.load_module(module_name, *mm)
         run(module, options.steps)
-

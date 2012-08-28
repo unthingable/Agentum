@@ -6,7 +6,9 @@ from agentum.simulation import Simulation, Container
 from agentum.agent import Agent, MetaAgent
 from agentum.space import Cell, GridSpace as CellSpace
 
-log = logging.Logger(__name__)
+logging.basicConfig()
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 class config(Container):
     dimensions = (100, 100)
@@ -26,11 +28,11 @@ class config(Container):
 # A cell can be anything: a dict, a list, an object, etc..
 # Here we use slots as an example of compact storage.
 class Cell(object):
-    __slots__ = "bugs", "heat"
+    __slots__ = "bugs", "heat", "point"
     def __init__(self):
         self.heat = 0
-        # Stop. Who is responsible for moving and locating agents?
         self.bugs = set()
+
 
 class Bug(Agent):
     happiness = 0
@@ -52,11 +54,17 @@ class Bug(Agent):
             for new_cell in sorted(neighbors,
                                    key=lambda (v): v.heat,
                                    reverse=too_cold):
-                if (config.t_min < new_cell.heat < config.t_max
-                    and not new_cell.bugs):
+                if (not new_cell.bugs and
+                    # Is the new cell any better?
+                    ((too_hot and new_cell.heat < cell.heat) or
+                     (too_cold and new_cell.heat > cell.heat))
+                    ):
                     # Yay!
-                    bug, idx = simulation.space.move(self, new_cell)
+                    simulation.space.move(self, new_cell)
                     break
+            else:
+                log.debug("Bug %s could not move" % self)
+
         else:
             # A bug that does not move is a happier bug.
             self.happiness += 1
@@ -83,5 +91,6 @@ def setup(simulation):
     # Randomly scatter the bugs around the space
     for n, cell in izip(range(config.numbugs), unoccupied_cell_iter):
         bug = Bug()
+        log.debug("Adding agent %r" % bug)
         simulation.space.add_agent(bug, cell)
         simulation.agents.append(bug)

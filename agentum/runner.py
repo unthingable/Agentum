@@ -46,10 +46,10 @@ def run(module, steps):
 def run_main():
     options, args = parse_args()
     simmodule = args[0]
-    dirname = '.'
     if os.path.isfile(simmodule):
-        dirname = os.path.dirname(simmodule) or dirname
-        module_name = os.path.basename(simmodule).replace('.py','')
-        mm = imp.find_module(module_name)
-        module = imp.load_module(module_name, *mm)
+        dirname, module_name = os.path.split(simmodule)
+        module_name = module_name.replace('.py','')
+        module = imp.load_source(module_name, simmodule)
         run(module, options.steps)
+    else:
+        print "Not a file: %s" % simmodule

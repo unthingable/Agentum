@@ -3,7 +3,7 @@ from random import random
 import logging
 
 from agentum.simulation import Simulation, Container
-from agentum.agent import Agent
+from agentum.agent import Agent, MetaAgent
 from agentum.space import Cell, GridSpace as CellSpace
 
 log = logging.Logger(__name__)

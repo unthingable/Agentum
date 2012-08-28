@@ -12,6 +12,6 @@ setup(
 	],
     entry_points = """
         [console_scripts]
-        agentum = agentum.runner:run
+        agentum = agentum.runner:run_main
     """
 )

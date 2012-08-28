@@ -10,21 +10,21 @@ from agentum.simulation import Simulation
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 def parse_args():
     usage = "usage: %prog [options] [file]"
     parser = optparse.OptionParser(usage)
 
     parser.add_option("-s", "--steps", dest="steps", default=100,
-        help="The number of simulation steps"
+                      help="The number of simulation steps"
     )
-    parser.add_option("--no-wait", dest="nowait", default=False,
-        help="Run the simulation instead of waiting for remote control"
-    )
+    # How to add no argument options?
+    # parser.add_option("-c", "--controller-wait", dest="wait", default=False,
+    #                   help="Wait for controller connection")
 
     options, args = parser.parse_args()
-
+    # import ipdb; ipdb.set_trace()
     return options, args
 
 def run_main():
@@ -39,7 +39,8 @@ def run_main():
     sim = Simulation()
     setup(sim)
 
-    if options.nowait:
+    if options.steps:
+        steps = options.steps
         log.info("Running simulation %s for %d steps..." % (module.__name__, steps))
         # Much optimization todo
         for step in range(steps):

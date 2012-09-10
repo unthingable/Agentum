@@ -26,9 +26,14 @@ class Server(object):
         setup(sim)
 
         simulations.append(sim)
+        # ...
+
+
 
     def loop(self):
         """
         Start server loop
         """
         # accept zmq connections
+
+class ServerCtl(Server, Cmd):

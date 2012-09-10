@@ -8,7 +8,9 @@ setup(
 	packages=['agentum'],
 	install_requires=[
         'setuptools',
-#        'simplejson',
+        'simplejson',
+        'tkinter',
+        'matplotlib'
 	],
     entry_points = """
         [console_scripts]

@@ -9,11 +9,12 @@ import pkgutil
 import logging
 import optparse
 from agentum.simulation import Simulation
-from agentum.server import Server
+from agentum.server import Server, DummyServer
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
+
 
 def arg_parser():
     usage = "usage: %prog [options] [file]"
@@ -21,11 +22,11 @@ def arg_parser():
 
     parser.add_option("-s", dest="steps", default=100,
                       help="The number of simulation steps"
-    )
+                      )
 
-    parser.add_option("-gui", dest="steps", default=100,
-                      help="The number of simulation steps"
-    )
+    parser.add_option("-g", dest="gui", default=False,
+                      help="Launch the GUI"
+                      )
 
     # How to add no argument options?
     # parser.add_option("-c", "--controller-wait", dest="wait", default=False,
@@ -36,23 +37,26 @@ def arg_parser():
     # import ipdb; ipdb.set_trace()
     return options, args
 
+
 # rudimentary, needs work
 def load_module_config(parser, module):
     config = getattr(module, 'config', None)
     if config:
-        for k,v in config.__dict__.items():
+        for k, v in config.__dict__.items():
             if not k.startswith('_'):
                 parser.add_option('--%s' % k,
-                                  dest = k,
-                                  default = v)
+                                  dest=k,
+                                  default=v)
+
 
 def update_module_config(options, module):
     config = getattr(module, 'config', None)
     if config:
-        for k,v in config.__dict__.items():
+        for k, v in config.__dict__.items():
             if not k.startswith('_'):
                 setattr(config, k, getattr(options, k))
         log.debug("New config: %s" % config.__dict__)
+
 
 def run_main():
     parser = arg_parser()
@@ -63,27 +67,8 @@ def run_main():
     options, args = parser.parse_args()
     update_module_config(options, module)
 
-    if options.steps:
-        setup = getattr(module, 'setup', None)
-        if not setup:
-            raise Exception("No setup() found in module %s" % module.__name__)
-        log.info("Loading simulation %s" % module.__name__)
-        sim = Simulation()
-        setup(sim)
-
-        steps = options.steps
-        log.info("Running simulation %s for %d steps..." % (module.__name__, steps))
-        # Much optimization todo
-        for step in range(steps):
-            log.debug("Step: %d" % step)
-            # Run agents
-            for agent in sim.agents:
-                agent.run(sim)
-            # Run metaagents
-            for cell in sim.space.cells():
-                for metaagent in sim.metaagents:
-                    metaagent.run(sim, cell)
-            # This is a good place to emit state updates and such
+    if not options.gui:
+        server = DummyServer()
     else:
         # Load ZMQ control center and start the wait loop^H^H^H
         # For now, load a Server with a single simulation
@@ -93,16 +78,32 @@ def run_main():
         # while True:
         #     time.sleep(1)
 
-        server = Server()
-        server.load_simulation(module)
-        server.loop()
+        # server = Server()
+        # server.load_simulation(module)
+        # server.loop()
+
+        sys.argv.remove('-g')
+        import kivy
+
+        from kivy.app import App
+        from kivy.uix.button import Button
+
+        class MyApp(App):
+            def build(self):
+                return Button(text='Hello World')
+
+        MyApp().run()
+        return
+    server.load(module)
+    server.run()
+
 
 def load_module(simmodule):
     # options, args = parse_args()
     # simmodule = args[0]
     if os.path.isfile(simmodule):
         dirname, module_name = os.path.split(simmodule)
-        module_name = module_name.replace('.py','')
+        module_name = module_name.replace('.py', '')
         module = imp.load_source(module_name, simmodule)
     else:
         raise Exception("Not a file: %s" % simmodule)

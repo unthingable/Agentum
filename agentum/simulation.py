@@ -1,8 +1,10 @@
 '''
 Simulation is agent's access to the simulated world.
 '''
+from protocol import Propagator
 
-class Simulation(object):
+
+class Simulation(Propagator):
 
     space = None    # A single "physical" space for now.
     networks = {}
@@ -13,15 +15,10 @@ class Simulation(object):
     # Put your runtime stuff in here
     runtime = None
 
+    stream_name = 'sim'
+
     @property
     def config():
         '''
         Return simulation config
         '''
-
-# A smart container to propagate properties.
-# Anything you want shared between agents goes here.
-class Container(object):
-    pass
-
-# TODO: create a decorator to denote synchronized/exposed properties.

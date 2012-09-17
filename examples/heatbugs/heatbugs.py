@@ -10,6 +10,7 @@ logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+
 class config(Container):
     dimensions = (100, 100)
     numbugs = 30
@@ -29,6 +30,8 @@ class config(Container):
 # Here we use slots as an example of compact storage.
 class Cell(object):
     __slots__ = "bugs", "heat", "point"
+    display = ['heat']
+
     def __init__(self):
         self.heat = 0
         self.bugs = set()
@@ -57,8 +60,7 @@ class Bug(Agent):
                 if (not new_cell.bugs and
                     # Is the new cell any better?
                     ((too_hot and new_cell.heat < cell.heat) or
-                     (too_cold and new_cell.heat > cell.heat))
-                    ):
+                     (too_cold and new_cell.heat > cell.heat))):
                     # Yay!
                     simulation.space.move(self, new_cell)
                     break
@@ -69,10 +71,11 @@ class Bug(Agent):
             # A bug that does not move is a happier bug.
             self.happiness += 1
 
+
 class Dissipator(MetaAgent):
     def run(self, simulation, cell):
         emission_loss = cell.heat * config.transmission_coeff
-        neighbors = simulation.space.neighbors(cell)
+        neighbors = simulation.space.neighbors(cell, r=1)
         for n in neighbors:
             # Only colder cells (positive delta) will absorb the heat.
             # Sum of transmissions cannot be greater that the total emission.
@@ -80,11 +83,13 @@ class Dissipator(MetaAgent):
             n.heat += emission_loss / len(neighbors)
         cell.heat -= emission_loss + (cell.heat * config.sink_coeff)
 
+
 def setup(simulation):
     # Create space
     simulation.space = CellSpace(Cell, dimensions=config.dimensions)
     # Create agents
-    # ... for now the hard way. Must add them in both the simulation and the space...
+    # ... for now the hard way.
+    # Must add them in both the simulation and the space...
     cell_iter = cycle(simulation.space.cells(CellSpace.tr_random))
     unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
 

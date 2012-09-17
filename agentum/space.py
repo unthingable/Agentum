@@ -9,8 +9,9 @@ from operator import itemgetter
 from random import choice
 from functools import wraps
 import math
-
 import logging
+
+from protocol import Propagator
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -32,16 +33,20 @@ def memoize(f):
     return decorated_function
 
 # how about: a cell is responsible for communicating its state changes
-class Cell(object):
+class Cell(Propagator):
     """
     The basic element of our world. Must be hashable.
     """
     __slots__ = "properties", "agents"
+    stream_name = "cell"
+    point = None
 
     def __init__(self, properties=None):
         self.agents = set()
         self.properties = properties or {}
 
+    def id(self):
+        return str(self.point)
 
 class SparseSpace(object):
     """
@@ -183,6 +188,9 @@ class GridSpace(CellSpace):
             return self.idx_cell_map.values()
         else:
             return traverse(self.idx_cell_map.values())
+
+    def cell_point(self, cell):
+        return self.cell_idx_map[cell]
 
     @property
     def dimensions(self): return self._dimensions

@@ -1,7 +1,12 @@
-class Agent(object):
+from protocol import Propagator
 
+
+class Agent(Propagator):
+
+    stream_name = 'agent'
     def run(self, simulation):
         return True
+
 
 class MetaAgent(object):
     '''

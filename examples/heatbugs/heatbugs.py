@@ -2,7 +2,7 @@ from itertools import izip, ifilter, cycle
 from random import random
 import logging
 
-from agentum.simulation import Simulation, Container
+from agentum.simulation import Simulation
 from agentum.agent import Agent, MetaAgent
 from agentum.space import Cell, GridSpace as CellSpace
 
@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-class config(Container):
+class HeatBugs(Simulation):
     dimensions = (100, 100)
     numbugs = 30
 
@@ -25,12 +25,14 @@ class config(Container):
     # runtime stuff
     max_heat = 0    # maximum heat observed
 
+simulation = HeatBugs
+
 
 # A cell can be anything: a dict, a list, an object, etc..
 # Here we use slots as an example of compact storage.
-class Cell(object):
-    __slots__ = "bugs", "heat", "point"
-    display = ['heat']
+class BugCell(Cell):
+    __slots__ = "bugs", "heat"
+    outputs = ['heat']
 
     def __init__(self):
         self.heat = 0
@@ -42,12 +44,12 @@ class Bug(Agent):
 
     def run(self, simulation):
         cell = simulation.space.find(self)
-        cell.heat += config.heat
-        if cell.heat > config.max_heat:
-            config.max_heat = cell.heat
+        cell.heat += simulation.heat
+        if cell.heat > simulation.max_heat:
+            simulation.max_heat = cell.heat
 
-        too_hot = cell.heat > config.t_max
-        too_cold = cell.heat < config.t_min
+        too_hot = cell.heat > simulation.t_max
+        too_cold = cell.heat < simulation.t_min
         if too_hot or too_cold:
             # FFFUUUUUuuu!
             self.happiness -= 1
@@ -74,19 +76,19 @@ class Bug(Agent):
 
 class Dissipator(MetaAgent):
     def run(self, simulation, cell):
-        emission_loss = cell.heat * config.transmission_coeff
+        emission_loss = cell.heat * simulation.transmission_coeff
         neighbors = simulation.space.neighbors(cell, r=1)
         for n in neighbors:
             # Only colder cells (positive delta) will absorb the heat.
             # Sum of transmissions cannot be greater that the total emission.
             delta = cell.heat - n.heat
             n.heat += emission_loss / len(neighbors)
-        cell.heat -= emission_loss + (cell.heat * config.sink_coeff)
+        cell.heat -= emission_loss + (cell.heat * simulation.sink_coeff)
 
 
 def setup(simulation):
     # Create space
-    simulation.space = CellSpace(Cell, dimensions=config.dimensions)
+    simulation.space = CellSpace(BugCell, dimensions=simulation.dimensions)
     # Create agents
     # ... for now the hard way.
     # Must add them in both the simulation and the space...
@@ -94,7 +96,7 @@ def setup(simulation):
     unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
 
     # Randomly scatter the bugs around the space
-    for n, cell in izip(range(config.numbugs), unoccupied_cell_iter):
+    for n, cell in izip(range(simulation.numbugs), unoccupied_cell_iter):
         bug = Bug()
         log.debug("Adding agent %r" % bug)
         simulation.space.add_agent(bug, cell)

@@ -23,6 +23,7 @@ cell <id> param value [param value [param value] ...]
 Input:
 
 sim state run|stop|pause
+sim step
 agent|cell <id> param value
 """
 
@@ -47,6 +48,7 @@ class Propagator(object):
         return '<id>'
 
     def __setattr__(self, key, value):
+        # May have to optimize this later
         if key in self.inputs or key in self.outputs:
             # tell the world the value has changed
             output = [self.stream_name, self.id(), key, json.dumps(value)]

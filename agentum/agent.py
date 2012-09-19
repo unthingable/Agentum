@@ -4,6 +4,7 @@ from protocol import Propagator
 class Agent(Propagator):
 
     stream_name = 'agent'
+
     def run(self, simulation):
         return True
 
@@ -24,6 +25,5 @@ class MetaAgent(object):
     def is_present_at(self, cell):
         return True
 
-    #
     def run(self, simulation, cell):
         pass

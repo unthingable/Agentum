@@ -38,14 +38,16 @@ class Propagator(object):
     A mixin that will inspect input/output/command fields and wire
     stuff up.
     """
-
     inputs = []
     outputs = []
     commands = []
+
     stream_name = 'set stream_name!'
+    _id_seq = 0
 
     def id(self):
-        return '<id>'
+        self._id_seq += 1
+        return self._id_seq
 
     def __setattr__(self, key, value):
         # May have to optimize this later

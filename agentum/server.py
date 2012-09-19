@@ -23,6 +23,18 @@ logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+
+def zrange(x):
+    '''
+    Like xrange, but go on forever if x is 0 (or None)
+    '''
+    x = x or -1
+    y = 0
+    while x != y:
+        yield y
+        y += 1
+
+
 class Server(object):
 
     # clients = []
@@ -48,11 +60,16 @@ class Server(object):
         # ...
 
     def run(self, steps=100):
-        log.info("Running simulation %s for %d steps..." % (self.module.__name__, steps))
-        for n in range(steps):
+        '''
+        Run the simulation for N steps. Set to 0 to run endlessly.
+        '''
+        log.info("Running simulation %s for %d steps..." %
+                 (self.module.__name__, steps))
+        for n in zrange(steps):
+            # TODO: get messages and stop if requested, otherwise:
             self.step(n)
 
-    def step(self, stepnum):
+    def step(self, stepnum=-1):
         log.debug("Step: %d" % stepnum)
         sim = self.sim
         # Much optimization todo
@@ -66,6 +83,9 @@ class Server(object):
                 metaagent.run(sim, cell)
         # This is a good place to emit state updates and such
 
+    def stop(self):
+        pass
+
 
 class NetServer(Server):
     """
@@ -77,6 +97,7 @@ class NetServer(Server):
         """
         # accept zmq connections
 
+
 class CliServer(Server, Cmd):
     """
     Interactive self-contained command line server.
@@ -85,6 +106,7 @@ class CliServer(Server, Cmd):
     # This one will have the GUI. Who is responsible for
     # drawing the simulation?
     # For simplicity's sake, let the gui introspect the grid.
+
 
 class WebServer(Server):
     # a bare minimum gui, supporting grids only (for now)
@@ -97,7 +119,8 @@ class WebServer(Server):
 #        heatmap_tk.draw_init(self.sim.space, module.__name__)
 
     def run(self, steps=100):
-        log.info("Running simulation %s for %d steps..." % (module.__name__, steps))
+        log.info("Running simulation %s for %d steps..." %
+                 (module.__name__, steps))
         for n in range(steps):
             self.step(n)
 

@@ -17,6 +17,8 @@ STOP <sim id>
 
 import logging
 from cmd import Cmd
+from gevent.server import StreamServer
+
 from agentum.simulation import Simulation
 
 logging.basicConfig()
@@ -60,9 +62,9 @@ class Server(object):
         # ...
 
     def run(self, steps=100):
-        '''
+        """
         Run the simulation for N steps. Set to 0 to run endlessly.
-        '''
+        """
         log.info("Running simulation %s for %d steps..." %
                  (self.module.__name__, steps))
         for n in zrange(steps):
@@ -95,6 +97,7 @@ class NetServer(Server):
         """
         Start server loop
         """
+
         # accept zmq connections
 
 

@@ -16,14 +16,16 @@ class HeatBugs(Simulation):
     numbugs = 30
 
     heat = 1.5          # how much heat a bug emits per turn
-    t_max = 2
+    t_max = 2           # how much can the bug tolerate
     t_min = 0.4
 
-    transmission = 0.3  # how much heat transmits
+    transmission = 0.3  # how much heat is radiated to neighbors
     sink = 0.1          # how much heat is lost into space
 
     # runtime stuff
     max_heat = 0    # maximum heat observed
+
+    inputs = 'heat t_max t_min transmission sink'.split()
 
 simulation = HeatBugs
 

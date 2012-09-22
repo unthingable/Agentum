@@ -11,8 +11,8 @@ setup(
         'simplejson',
         'tornado',
         'pyzmq',
-#        'tkinter',
-#        'matplotlib'
+        'greenlet',
+        'gevent',  # libevent-dev
     ],
     entry_points="""
         [console_scripts]

@@ -12,7 +12,7 @@ import optparse
 import signal
 
 from agentum.simulation import Simulation
-from agentum.server import Server, DummyServer
+from agentum.server import WorkerSerial
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ def run_main():
     update_module_config(options, module)
 
     if not options.gui:
-        server = DummyServer()
+        worker = WorkerSerial()
     else:
         # Load ZMQ control center and start the wait loop^H^H^H
         # For now, load a Server with a single simulation
@@ -87,14 +87,14 @@ def run_main():
         # while True:
         #     time.sleep(1)
 
-        # server = Server()
-        # server.load_simulation(module)
-        # server.loop()
+        # worker = Server()
+        # worker.load_simulation(module)
+        # worker.loop()
 
 
         return
-    server.load(module)
-    server.run()
+    worker.load(module)
+    worker.run()
 
 
 def load_module(simmodule):

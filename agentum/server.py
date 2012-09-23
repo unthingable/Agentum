@@ -48,7 +48,7 @@ def zrange(x):
         y += 1
 
 
-class Server(object):
+class WorkerBase(object):
 
     # clients = []
     # simulations = []
@@ -73,6 +73,72 @@ class Server(object):
 
         # simulations.append(sim)
         # ...
+
+    def step_agent(self, agent):
+        agent.run(self.sim)
+
+    # slightly different semantics, due to the nature of metaagents
+    def step_metaagent(self, cell):
+        for metaagent in self.sim.metaagents:
+            metaagent.run(self.sim, cell)
+
+
+class WorkerSerial(WorkerBase):
+    def run(self, steps=100):
+        """
+        Run the simulation for N steps. Set to 0 to run endlessly.
+        """
+        log.info("Running simulation %s for %d steps..." %
+                 (self.module.__name__, steps))
+        for n in zrange(steps):
+            # TODO: get messages and stop if requested, otherwise:
+            self.step(n)
+
+    def step(self, stepnum=-1):
+        log.debug("Step: %d" % stepnum)
+        sim = self.sim
+
+        # Run agents
+        map(self.step_agent, sim.agents)
+        # Run metaagents
+        map(self.step_metaagent, sim.space.cells())
+        # This is a good place to emit state updates and such
+
+
+class WorkerGevent(WorkerBase):
+    def run(self, steps=100):
+        """
+        Run the simulation for N steps. Set to 0 to run endlessly.
+        """
+        log.info("Running simulation %s for %d steps..." %
+                 (self.module.__name__, steps))
+        for n in zrange(steps):
+            # TODO: get messages and stop if requested, otherwise:
+            self.step(n)
+
+    def step(self, stepnum=-1):
+        log.debug("Step: %d" % stepnum)
+        sim = self.sim
+
+        # Run agents
+        self.group.imap(self.step_agent, sim.agents)
+        # Run metaagents
+        self.group.imap(self.step_metaagent, sim.space.cells())
+        # This is a good place to emit state updates and such
+
+    def step_agent(self, agent):
+        agent.run(self.sim)
+        gevent.sleep(0)
+
+
+    # slightly different semantics, due to the nature of metaagents
+    def step_metaagent(self, cell):
+        for metaagent in self.sim.metaagents:
+            metaagent.run(self.sim, cell)
+            gevent.sleep(0)
+
+
+class WorkerGevent2(WorkerBase):
 
     def run(self, steps=100):
         """
@@ -117,19 +183,6 @@ class Server(object):
             (stream, item) = result_queue.get()
             finished[stream].add(item)
 
-        # sim = self.sim
-
-        # # Much optimization todo
-
-        # # Run agents
-        # self.group.imap(self.step_agent, sim.agents)
-        # # Run metaagents
-        # self.group.imap(self.step_metaagent, sim.space.cells())
-        # # This is a good place to emit state updates and such
-
-    def stop(self):
-        pass
-
     def step_agent(self, agent):
         while True:
             stepnum = step_event.get()
@@ -154,48 +207,3 @@ class Server(object):
                 gevent.sleep(0)
             result_queue.put(('metaagent', cell))
 
-
-
-class NetServer(Server):
-    """
-    Network server, remote UI.
-    """
-    def loop(self):
-        """
-        Start server loop
-        """
-
-        # accept zmq connections
-
-
-class CliServer(Server, Cmd):
-    """
-    Interactive self-contained command line server.
-    """
-
-    # This one will have the GUI. Who is responsible for
-    # drawing the simulation?
-    # For simplicity's sake, let the gui introspect the grid.
-
-
-class WebServer(Server):
-    # a bare minimum gui, supporting grids only (for now)
-
-#    from frontent import heatmap_tk
-
-    def load(self, module):
-        super(GuiServer, self).load(module)
-
-#        heatmap_tk.draw_init(self.sim.space, module.__name__)
-
-    def run(self, steps=100):
-        log.info("Running simulation %s for %d steps..." %
-                 (module.__name__, steps))
-        for n in range(steps):
-            self.step(n)
-
-
-class DummyServer(Server):
-    """
-    Run the simulation for N steps, for testing.
-    """

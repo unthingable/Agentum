@@ -37,6 +37,9 @@ queue = None
 id_seq = defaultdict(int)
 ids = {}
 
+# questionable hack
+active = True
+
 class Propagator(object):
     """
     A mixin that will inspect input/output/command fields and wire
@@ -52,14 +55,15 @@ class Propagator(object):
         if not self in ids:
             id_seq[self.__class__] += 1
             ids[self] = id_seq[self.__class__]
-        return id_seq[self]
+        return str(ids[self])
 
     def __setattr__(self, key, value):
         # May have to optimize this later
-        if key in self.inputs or key in self.outputs:
+        if active and (key in self.inputs or key in self.outputs):
             # tell the world the value has changed
             output = [self.stream_name, self.id(), key, json.dumps(value)]
             log.debug(' '.join(output))
             if queue:
                 queue.put(output)
         object.__setattr__(self, key, value)
+

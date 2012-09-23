@@ -36,13 +36,18 @@ class BugCell(Cell):
     __slots__ = "bugs", "heat"
     outputs = ['heat']
 
-    def __init__(self):
+    def __init__(self, point):
+        # more elegant way to do this?
+        Cell.__init__(self, point)
         self.heat = 0
         self.bugs = set()
 
 
 class Bug(Agent):
     happiness = 0
+    cell = None
+
+    outputs = ['cell', ]
 
     def run(self, simulation):
         cell = simulation.space.find(self)
@@ -66,7 +71,7 @@ class Bug(Agent):
                     ((too_hot and new_cell.heat < cell.heat) or
                      (too_cold and new_cell.heat > cell.heat))):
                     # Yay!
-                    simulation.space.move(self, new_cell)
+                    self.move(simulation, new_cell)
                     break
             else:
                 log.debug("Bug %s could not move" % self)
@@ -75,6 +80,9 @@ class Bug(Agent):
             # A bug that does not move is a happier bug.
             self.happiness += 1
 
+    def move(self, simulation, new_cell):
+        self.cell = str(new_cell)
+        simulation.space.move(self, new_cell)
 
 class Dissipator(MetaAgent):
     def run(self, simulation, cell):

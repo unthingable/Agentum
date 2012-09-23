@@ -51,10 +51,12 @@ class WorkerBase(object):
             raise Exception("No setup() found in module %s" % module.__name__)
         log.info("Loading simulation %s" % module.__name__)
 
-        # protocol.active = False
+        protocol.active = False
         self.sim = module.simulation()
         setup(self.sim)
-        # protocol.active = True
+        protocol.active = True
+        protocol.send('sim space grid 100x100')
+        protocol.send('cell all heat 0')
 
         # simulations.append(sim)
         # ...

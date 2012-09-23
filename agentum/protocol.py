@@ -9,16 +9,13 @@ sim <id>
 sim in|out param [param [param] ...]
 sim param value [param value [param value] ...]
 
-sim space grid|graph
+sim space grid|graph [grid_size]
 sim state run|stop|pause
 
 step [num]
 
-agent <id> in|out param [param [param] ...]
-agent <id> param value [param value [param value] ...]
-
-cell <id> in|out param [param [param] ...]
-cell <id> param value [param value [param value] ...]
+agent|cell <id>|all in|out param [param [param] ...]
+agent|cell <id>|all param value [param value [param value] ...]
 
 Input:
 
@@ -39,6 +36,12 @@ ids = {}
 
 # questionable hack
 active = True
+
+
+def send(obj):
+    if queue:
+        queue.put(obj)
+
 
 class Propagator(object):
     """
@@ -61,9 +64,8 @@ class Propagator(object):
         # May have to optimize this later
         if active and (key in self.inputs or key in self.outputs):
             # tell the world the value has changed
-            output = [self.stream_name, self.id(), key, json.dumps(value)]
-            log.debug(' '.join(output))
-            if queue:
-                queue.put(output)
+            output = [self.stream_name, self.id(), key, str(value)]
+            o = ' '.join(output)
+            log.debug(o)
+            send(o)
         object.__setattr__(self, key, value)
-

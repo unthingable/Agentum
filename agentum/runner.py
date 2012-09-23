@@ -105,7 +105,16 @@ def run_main():
 
             module = load_module(simmodule)
             worker.load(module)
-            worker.run(steps=2)
+            fileobj = socket.makefile()
+
+            for command in fileobj:
+                args = command.strip().split()
+                if args[0] == 'quit':
+                    break
+                elif args[0] == 'step':
+                    worker.step()
+            # fileobj.readline()
+            # worker.run(steps=2)
             socket.close()
 
         server = StreamServer(('127.0.0.1', 5000), handle)

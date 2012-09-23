@@ -35,6 +35,7 @@ log.setLevel(logging.DEBUG)
 
 queue = None
 id_seq = defaultdict(int)
+ids = {}
 
 class Propagator(object):
     """
@@ -48,7 +49,9 @@ class Propagator(object):
     stream_name = 'set stream_name!'
 
     def id(self):
-        id_seq[self] += 1
+        if not self in ids:
+            id_seq[self.__class__] += 1
+            ids[self] = id_seq[self.__class__]
         return id_seq[self]
 
     def __setattr__(self, key, value):

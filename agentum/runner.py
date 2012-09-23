@@ -3,6 +3,8 @@
 # Rudiments of the worker code
 
 import gevent
+from gevent import monkey
+from gevent.server import StreamServer
 import imp
 import sys
 import os
@@ -12,7 +14,10 @@ import optparse
 import signal
 
 from agentum.simulation import Simulation
-from agentum.server import WorkerSerial
+from agentum import worker as w
+from agentum import protocol
+
+monkey.patch_all()
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -62,9 +67,7 @@ def update_module_config(options, module):
 
 
 def run_main():
-    # heh, still not working
     gevent.signal(signal.SIGQUIT, gevent.shutdown)
-    #gevent.signal(signal.SIGKILL, gevent.shutdown)
     gevent.signal(signal.SIGTERM, gevent.shutdown)
     gevent.signal(signal.SIGHUP, gevent.shutdown)
 
@@ -76,8 +79,9 @@ def run_main():
     options, args = parser.parse_args()
     update_module_config(options, module)
 
+    worker = w.WorkerSerial()
     if not options.gui:
-        worker = WorkerSerial()
+        pass
     else:
         # Load ZMQ control center and start the wait loop^H^H^H
         # For now, load a Server with a single simulation
@@ -91,6 +95,22 @@ def run_main():
         # worker.load_simulation(module)
         # worker.loop()
 
+        def handle(socket, address):
+            socket.send("Welcome to simulation server\n")
+            worker = w.WorkerSerial()
+            class queue(object):
+                def put(self, obj):
+                    socket.send("%s\n" % ' '.join(obj))
+            protocol.queue = queue()
+
+            module = load_module(simmodule)
+            worker.load(module)
+            worker.run(steps=2)
+            socket.close()
+
+        server = StreamServer(('127.0.0.1', 5000), handle)
+        log.info("Starting server %s" % str(server))
+        server.serve_forever()
 
         return
     worker.load(module)

@@ -41,12 +41,16 @@ class Cell(Propagator):
     stream_name = "cell"
     point = None
 
-    def __init__(self, properties=None):
+    def __init__(self, point, properties=None):
         self.agents = set()
         self.properties = properties or {}
+        self.point = point
 
     def id(self):
         return str(self.point)
+
+    def __str__(self):
+        return self.id()
 
 class SparseSpace(object):
     """
@@ -164,7 +168,7 @@ class GridSpace(CellSpace):
 
         # Important to note: functions inside the tuple are evaluated for
         # _every_ tuple, not just once.
-        self.idx_cell_map = dict((tuple(xyz), cell_fn())
+        self.idx_cell_map = dict((tuple(xyz), cell_fn(tuple(xyz)))
             for xyz in product(*imap(xrange, dimensions)))
         self.cell_idx_map = {}
         for idx,cell in self.idx_cell_map.iteritems():

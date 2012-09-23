@@ -43,6 +43,7 @@ class WorkerBase(object):
     module = None
 
     _num_cells = 0
+    stepnum = 0
 
     def load(self, module):
         self.module = module
@@ -55,11 +56,23 @@ class WorkerBase(object):
         self.sim = module.simulation()
         setup(self.sim)
         protocol.active = True
+
+        protocol.send('sim name %s' % module.__name__)
         protocol.send('sim space grid 100x100')
         protocol.send('cell all heat 0')
 
         # simulations.append(sim)
         # ...
+
+    def run(self, steps=100):
+        """
+        Run the simulation for N steps. Set to 0 to run endlessly.
+        """
+        log.info("Running simulation %s for %d steps..." %
+                 (self.module.__name__, steps))
+        for n in zrange(steps):
+            # TODO: get messages and stop if requested, otherwise:
+            self.step()
 
     def step_agent(self, agent):
         agent.run(self.sim)
@@ -71,18 +84,11 @@ class WorkerBase(object):
 
 
 class WorkerSerial(WorkerBase):
-    def run(self, steps=100):
-        """
-        Run the simulation for N steps. Set to 0 to run endlessly.
-        """
-        log.info("Running simulation %s for %d steps..." %
-                 (self.module.__name__, steps))
-        for n in zrange(steps):
-            # TODO: get messages and stop if requested, otherwise:
-            self.step(n)
 
-    def step(self, stepnum=-1):
-        log.debug("Step: %d" % stepnum)
+    def step(self):
+        self.stepnum += 1
+        log.debug("Step: %d" % self.stepnum)
+        protocol.send("step %s" % self.stepnum)
         sim = self.sim
 
         # Run agents
@@ -93,20 +99,15 @@ class WorkerSerial(WorkerBase):
 
 
 class WorkerGevent(WorkerBase):
-    def run(self, steps=100):
-        """
-        Run the simulation for N steps. Set to 0 to run endlessly.
-        """
-        self.group = Group()
-        log.info("Running simulation %s for %d steps..." %
-                 (self.module.__name__, steps))
-        for n in zrange(steps):
-            # TODO: get messages and stop if requested, otherwise:
-            self.step(n)
+    group = None
 
-    def step(self, stepnum=-1):
-        log.debug("Step: %d" % stepnum)
+    def step(self):
+        self.stepnum += 1
+        log.debug("Step: %d" % self.stepnum)
         sim = self.sim
+
+        if not self.group:
+            self.group = Group()
 
         # Run agents
         self.group.imap(self.step_agent, sim.agents)
@@ -126,71 +127,71 @@ class WorkerGevent(WorkerBase):
             gevent.sleep(0)
 
 
-class WorkerGevent2(WorkerBase):
+# class WorkerGevent2(WorkerBase):
 
-    def run(self, steps=100):
-        """
-        Run the simulation for N steps. Set to 0 to run endlessly.
-        """
-        agent_group = Group()
-        magent_group = Group()
-        log.info("Running simulation %s for %d steps..." %
-                 (self.module.__name__, steps))
+#     def run(self, steps=100):
+#         """
+#         Run the simulation for N steps. Set to 0 to run endlessly.
+#         """
+#         agent_group = Group()
+#         magent_group = Group()
+#         log.info("Running simulation %s for %d steps..." %
+#                  (self.module.__name__, steps))
 
-        # Gentlemen, start your agents
-        for agent in self.sim.agents:
-            agent_group.add(gevent.spawn(self.step_agent, agent))
-        for cell in self.sim.space.cells():
-            magent_group.add(gevent.spawn(self.step_metaagent, cell))
+#         # Gentlemen, start your agents
+#         for agent in self.sim.agents:
+#             agent_group.add(gevent.spawn(self.step_agent, agent))
+#         for cell in self.sim.space.cells():
+#             magent_group.add(gevent.spawn(self.step_metaagent, cell))
 
-        # TODO: remove
-        self._num_cells = len(self.sim.space.cells())
+#         # TODO: remove
+#         self._num_cells = len(self.sim.space.cells())
 
-        for n in zrange(steps):
-            # TODO: get messages and stop if requested, otherwise:
-            self.step(n)
-        # Finally:
-        step_event.set(-1)
+#         for n in zrange(steps):
+#             # TODO: get messages and stop if requested, otherwise:
+#             self.step(n)
+#         # Finally:
+#         step_event.set(-1)
 
-        # Check agents for errors?
-        agent_group.join()
-        magent_group.join()
+#         # Check agents for errors?
+#         agent_group.join()
+#         magent_group.join()
 
-    def step(self, stepnum=-1):
-        log.debug("Step: %d" % stepnum)
+#     def step(self, stepnum=-1):
+#         log.debug("Step: %d" % stepnum)
 
-        if not step_event.ready():
-            step_event.set(stepnum)
+#         if not step_event.ready():
+#             step_event.set(stepnum)
 
-        # Wait for agents to do their thing
-        finished = {'agent': set(), 'metaagent': set()}
-        while True:
-            if (len(finished['agent']) == len(self.sim.agents) and
-                len(finished['metaagent']) == self._num_cells):
-                break
-            (stream, item) = result_queue.get()
-            finished[stream].add(item)
+#         # Wait for agents to do their thing
+#         finished = {'agent': set(), 'metaagent': set()}
+#         while True:
+#             if (len(finished['agent']) == len(self.sim.agents) and
+#                 len(finished['metaagent']) == self._num_cells):
+#                 break
+#             (stream, item) = result_queue.get()
+#             finished[stream].add(item)
 
-    def step_agent(self, agent):
-        while True:
-            stepnum = step_event.get()
-            if stepnum == -1:
-                # We're done
-                return
-            agent.run(self.sim)
-            # Report we're done with the step
-            result_queue.put(('agent', agent))
-            gevent.sleep(0)
+#     def step_agent(self, agent):
+#         while True:
+#             stepnum = step_event.get()
+#             if stepnum == -1:
+#                 # We're done
+#                 return
+#             agent.run(self.sim)
+#             # Report we're done with the step
+#             result_queue.put(('agent', agent))
+#             gevent.sleep(0)
 
 
-    # slightly different semantics, due to the nature of metaagents
-    def step_metaagent(self, cell):
-        while True:
-            stepnum = step_event.get()
-            if stepnum == -1:
-                # We're done
-                return
-            for metaagent in self.sim.metaagents:
-                metaagent.run(self.sim, cell)
-                gevent.sleep(0)
-            result_queue.put(('metaagent', cell))
+#     # slightly different semantics, due to the nature of metaagents
+#     def step_metaagent(self, cell):
+#         while True:
+#             stepnum = step_event.get()
+#             if stepnum == -1:
+#                 # We're done
+#                 return
+#             for metaagent in self.sim.metaagents:
+#                 metaagent.run(self.sim, cell)
+#                 gevent.sleep(0)
+#             result_queue.put(('metaagent', cell))

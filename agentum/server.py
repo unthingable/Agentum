@@ -35,13 +35,18 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
 
-from gevent.server import StreamServer
+class WorkerCmd(Cmd):
 
-def handle(socket, address):
-    socket.send("Hello from a telnet!\n")
-    for i in range(5):
-        socket.send(str(i) + '\n')
-    socket.close()
+    def __init__(self, worker, *args, **kwargs):
+        Cmd.__init__(self, *args, **kwargs)
+        self.worker = worker
+        self.prompt = '%s> ' % worker.module.__name__
 
-server = StreamServer(('127.0.0.1', 5000), handle)
-server.serve_forever()
+    def do_quit(self, s):
+        return True
+
+    def do_EOF(self, s):
+        return True
+
+    def do_step(self, s):
+        self.worker.step()

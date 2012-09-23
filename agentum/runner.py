@@ -95,7 +95,9 @@ def run_main():
         # worker.load_simulation(module)
         # worker.loop()
 
+        from agentum.server import WorkerCmd
         def handle(socket, address):
+            log.debug("Connected: %s" % str(address))
             socket.send("Welcome to simulation server\n")
             worker = w.WorkerSerial()
             class queue(object):
@@ -107,15 +109,13 @@ def run_main():
             worker.load(module)
             fileobj = socket.makefile()
 
-            for command in fileobj:
-                args = command.strip().split()
-                if args[0] == 'quit':
-                    break
-                elif args[0] == 'step':
-                    worker.step()
-            # fileobj.readline()
-            # worker.run(steps=2)
+            cmd = WorkerCmd(worker, stdin=fileobj, stdout=fileobj)
+            cmd.use_rawinput = False
+            cmd.cmdloop()
+            fileobj.close()
             socket.close()
+
+            log.debug("Disconnected: %s" % str(address))
 
         server = StreamServer(('127.0.0.1', 5000), handle)
         log.info("Starting server %s" % str(server))

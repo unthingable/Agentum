@@ -2,12 +2,15 @@
 
 # Rudiments of the worker code
 
+import gevent
 import imp
 import sys
 import os
 import pkgutil
 import logging
 import optparse
+import signal
+
 from agentum.simulation import Simulation
 from agentum.server import Server, DummyServer
 
@@ -59,6 +62,12 @@ def update_module_config(options, module):
 
 
 def run_main():
+    # heh, still not working
+    gevent.signal(signal.SIGQUIT, gevent.shutdown)
+    #gevent.signal(signal.SIGKILL, gevent.shutdown)
+    gevent.signal(signal.SIGTERM, gevent.shutdown)
+    gevent.signal(signal.SIGHUP, gevent.shutdown)
+
     parser = arg_parser()
     simmodule = sys.argv[-1]
     module = load_module(simmodule)
@@ -82,17 +91,7 @@ def run_main():
         # server.load_simulation(module)
         # server.loop()
 
-        sys.argv.remove('-g')
-        import kivy
 
-        from kivy.app import App
-        from kivy.uix.button import Button
-
-        class MyApp(App):
-            def build(self):
-                return Button(text='Hello World')
-
-        MyApp().run()
         return
     server.load(module)
     server.run()

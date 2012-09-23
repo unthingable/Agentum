@@ -13,6 +13,8 @@ setup(
         'pyzmq',
         'greenlet',
         'gevent',  # libevent-dev
+        'gevent-zeromq',
+        'geventwebsocket',
     ],
     entry_points="""
         [console_scripts]

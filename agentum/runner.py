@@ -100,7 +100,7 @@ def run_main():
             worker = w.WorkerSerial()
             class queue(object):
                 def put(self, obj):
-                    socket.send("%s\n" % ' '.join(obj))
+                    socket.send("%s\n" % obj)
             protocol.queue = queue()
 
             module = load_module(simmodule)

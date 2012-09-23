@@ -27,11 +27,14 @@ sim step
 agent|cell <id> param value
 """
 
+from collections import defaultdict
 import json
 import logging
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+queue = None
+id_seq = defaultdict(int)
 
 class Propagator(object):
     """
@@ -43,11 +46,10 @@ class Propagator(object):
     commands = []
 
     stream_name = 'set stream_name!'
-    _id_seq = 0
 
     def id(self):
-        self._id_seq += 1
-        return self._id_seq
+        id_seq[self] += 1
+        return id_seq[self]
 
     def __setattr__(self, key, value):
         # May have to optimize this later
@@ -55,4 +57,6 @@ class Propagator(object):
             # tell the world the value has changed
             output = [self.stream_name, self.id(), key, json.dumps(value)]
             log.debug(' '.join(output))
+            if queue:
+                queue.put(output)
         object.__setattr__(self, key, value)

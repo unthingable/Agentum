@@ -17,7 +17,10 @@ STOP <sim id>
 
 import logging
 from cmd import Cmd
+import gevent
+from gevent.event import AsyncResult
 from gevent.server import StreamServer
+from gevent.pool import Group
 
 from agentum.simulation import Simulation
 
@@ -25,6 +28,7 @@ logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+step_event = AsyncResult()
 
 def zrange(x):
     '''
@@ -46,6 +50,7 @@ class Server(object):
     # For now, a single simulation, no clients
     sim = None
     module = None
+    group = Group()
 
     def load(self, module):
         self.module = module
@@ -74,19 +79,29 @@ class Server(object):
     def step(self, stepnum=-1):
         log.debug("Step: %d" % stepnum)
         sim = self.sim
+
         # Much optimization todo
 
         # Run agents
-        for agent in sim.agents:
-            agent.run(sim)
+        self.group.imap(self.step_agent, sim.agents)
         # Run metaagents
-        for cell in sim.space.cells():
-            for metaagent in sim.metaagents:
-                metaagent.run(sim, cell)
+        self.group.imap(self.step_metaagent, sim.space.cells())
         # This is a good place to emit state updates and such
 
     def stop(self):
         pass
+
+    def step_agent(self, agent):
+        agent.run(self.sim)
+        gevent.sleep(0)
+
+
+    # slightly different semantics, due to the nature of metaagents
+    def step_metaagent(self, cell):
+        for metaagent in self.sim.metaagents:
+            metaagent.run(self.sim, cell)
+            gevent.sleep(0)
+
 
 
 class NetServer(Server):

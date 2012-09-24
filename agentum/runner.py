@@ -113,34 +113,41 @@ def run_main():
         import os.path
         from gevent import pywsgi
         from geventwebsocket.handler import WebSocketHandler
-        from cStringIO import StringIO
+        from geventwebsocket import websocket
 
-        stdin = StringIO()
+        def handle(ws):
+            log.debug("Connected")
+            worker = w.WorkerSerial()
+            class queue(object):
+                def put(self, obj):
+                    ws.send(obj)
+            protocol.queue = queue()
 
-        class WebSocketApp(object):
-            '''Send random data to the websocket'''
+            module = load_module(simmodule)
+            worker.load(module)
+            cmd = WorkerCmd(worker)
 
-            def __call__(self, environ, start_response):
-                ws = environ['wsgi.websocket']
+            while True:
+                m = ws.receive()
+                log.debug("Received: %s" % m)
+                if cmd.onecmd(m):
+                    break
 
-                log.debug("Connected")
-                # socket.send("Welcome to simulation server\n")
-                worker = w.WorkerSerial()
-                class queue(object):
-                    def put(self, obj):
-                        ws.send(obj)
-                protocol.queue = queue()
-
-                module = load_module(simmodule)
-                worker.load(module)
-                self.cmd = WorkerCmd(worker, stdin=stdin)
-                self.cmd.use_rawinput = False
-                self.cmd.cmdloop()
-
-                log.debug("Disconnected")
+        def app(environ, start_response):
+            if environ['PATH_INFO'] == '/test':
+                start_response("200 OK", [('Content-Type', 'text/plain')])
+                return ["Yes this is a test!"]
+            elif environ['PATH_INFO'] == "/data":
+                handle(environ['wsgi.websocket'])
+            else:
+                response_body = open(FILE).read()
+                status = '200 OK'
+                headers = [('Content-type', 'text/html'), ('Content-Length', str(len(response_body)))]
+                start_response(status, headers)
+                return [response_body]
 
         ws_server = pywsgi.WSGIServer(
-            ('', 9999), WebSocketApp(),
+            ('', 9999), app,
             handler_class=WebSocketHandler)
         # http server: serves up static files
         # http_server = gevent.pywsgi.WSGIServer(
@@ -148,7 +155,6 @@ def run_main():
         #     paste.urlparser.StaticURLParser(os.path.dirname(__file__)))
 
         ws_server.serve_forever()
-        # server.serve_forever()
 
 def load_module(simmodule):
     # options, args = parse_args()

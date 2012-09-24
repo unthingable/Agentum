@@ -5,8 +5,12 @@
         <script type="text/javascript">
         $(function() {
             // Open up a connection to our server
-            var url = "ws://192.168.3.137:9999/";
-            var ws = new WebSocket(url);
+            var url = "ws://192.168.3.137:9999/data";
+            if ("MozWebSocket" in window) {
+                var ws = new MozWebSocket(url);
+            } else {
+                var ws = new WebSocket(url);
+            }
 
             // What do we do when we get a message?
             ws.onmessage = function(evt) {
@@ -15,7 +19,8 @@
             // Just update our conn_status field with the connection status
             ws.onopen = function(evt) {
                 $('#conn_status').html('<b>Connected</b>');
-                // ws.send("step");
+                ws.send("step");
+                ws.send("quit")
             }
             ws.onerror = function(evt) {
                 $('#conn_status').html('<b>Error</b>');

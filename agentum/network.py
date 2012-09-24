@@ -1,3 +1,0 @@
-'''
-Communication networks for agents
-'''

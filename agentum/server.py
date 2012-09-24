@@ -50,3 +50,6 @@ class WorkerCmd(Cmd):
 
     def do_step(self, s):
         self.worker.step()
+
+    def do_run(self, s=100):
+        self.worker.run(int(s))

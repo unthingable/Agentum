@@ -47,7 +47,7 @@ class Bug(Agent):
     happiness = 0
     cell = None
 
-    outputs = ['cell', ]
+    outputs = ['cell']
 
     def run(self, simulation):
         cell = simulation.space.find(self)
@@ -81,7 +81,7 @@ class Bug(Agent):
             self.happiness += 1
 
     def move(self, simulation, new_cell):
-        self.cell = str(new_cell)
+        self.cell = new_cell.id()
         simulation.space.move(self, new_cell)
 
 class Dissipator(MetaAgent):

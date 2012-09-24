@@ -40,7 +40,9 @@ active = True
 
 def send(obj):
     if queue:
-        queue.put(obj)
+        if isinstance(obj, (str, unicode)):
+            obj = obj.split()
+        queue.put(json.dumps(obj))
 
 
 class Propagator(object):
@@ -64,8 +66,8 @@ class Propagator(object):
         # May have to optimize this later
         if active and (key in self.inputs or key in self.outputs):
             # tell the world the value has changed
-            output = [self.stream_name, self.id(), key, str(value)]
-            o = ' '.join(output)
-            log.debug(o)
-            send(o)
+            output = [self.stream_name, self.id(), key, value]
+            # o = ' '.join(output)
+            log.debug(output)
+            send(output)
         object.__setattr__(self, key, value)

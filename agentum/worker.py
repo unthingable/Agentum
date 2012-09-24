@@ -57,6 +57,7 @@ class WorkerBase(object):
         setup(self.sim)
         protocol.active = True
 
+        # dirty hack to test the concept:
         protocol.send('sim name %s' % module.__name__)
         protocol.send('sim space grid 100x100')
         protocol.send('cell all heat 0')
@@ -88,7 +89,7 @@ class WorkerSerial(WorkerBase):
     def step(self):
         self.stepnum += 1
         log.debug("Step: %d" % self.stepnum)
-        protocol.send("step %s" % self.stepnum)
+        protocol.send(("step", self.stepnum))
         sim = self.sim
 
         # Run agents

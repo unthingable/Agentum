@@ -9,12 +9,12 @@ setup(
     install_requires=[
         'setuptools',
         'simplejson',
-        'tornado',
-        'pyzmq',
+#        'tornado',
+#        'pyzmq',
         'greenlet',
         'gevent',  # libevent-dev
-        'gevent-zeromq',
-        'geventwebsocket',
+#        'gevent-zeromq',
+        'gevent-websocket',
     ],
     entry_points="""
         [console_scripts]

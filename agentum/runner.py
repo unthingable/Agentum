@@ -3,7 +3,7 @@
 # Rudiments of the worker code
 
 import gevent
-from gevent import monkey
+from gevent import monkey; monkey.patch_all()
 from gevent.server import StreamServer
 import imp
 import sys
@@ -16,8 +16,7 @@ import signal
 from agentum.simulation import Simulation
 from agentum import worker as w
 from agentum import protocol
-
-monkey.patch_all()
+from agentum.server import WorkerCmd
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -79,23 +78,11 @@ def run_main():
     options, args = parser.parse_args()
     update_module_config(options, module)
 
-    worker = w.WorkerSerial()
-    if not options.gui:
-        pass
-    else:
-        # Load ZMQ control center and start the wait loop^H^H^H
-        # For now, load a Server with a single simulation
-
-        # log.info("Simulation loaded, waiting for control (not yet implemented)")
-        # import time
-        # while True:
-        #     time.sleep(1)
-
-        # worker = Server()
-        # worker.load_simulation(module)
-        # worker.loop()
-
-        from agentum.server import WorkerCmd
+    #worker = w.WorkerSerial()
+    # if not options.gui:
+    #     worker.load(module)
+    #     worker.run()
+    if options.gui:
         def handle(socket, address):
             log.debug("Connected: %s" % str(address))
             socket.send("Welcome to simulation server\n")
@@ -122,9 +109,46 @@ def run_main():
         server.serve_forever()
 
         return
-    worker.load(module)
-    worker.run()
+    else:
+        import os.path
+        from gevent import pywsgi
+        from geventwebsocket.handler import WebSocketHandler
+        from cStringIO import StringIO
 
+        stdin = StringIO()
+
+        class WebSocketApp(object):
+            '''Send random data to the websocket'''
+
+            def __call__(self, environ, start_response):
+                ws = environ['wsgi.websocket']
+
+                log.debug("Connected")
+                # socket.send("Welcome to simulation server\n")
+                worker = w.WorkerSerial()
+                class queue(object):
+                    def put(self, obj):
+                        ws.send(obj)
+                protocol.queue = queue()
+
+                module = load_module(simmodule)
+                worker.load(module)
+                self.cmd = WorkerCmd(worker, stdin=stdin)
+                self.cmd.use_rawinput = False
+                self.cmd.cmdloop()
+
+                log.debug("Disconnected")
+
+        ws_server = pywsgi.WSGIServer(
+            ('', 9999), WebSocketApp(),
+            handler_class=WebSocketHandler)
+        # http server: serves up static files
+        # http_server = gevent.pywsgi.WSGIServer(
+        #     ('', 8000),
+        #     paste.urlparser.StaticURLParser(os.path.dirname(__file__)))
+
+        ws_server.serve_forever()
+        # server.serve_forever()
 
 def load_module(simmodule):
     # options, args = parse_args()

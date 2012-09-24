@@ -48,6 +48,7 @@ class Bug(Agent):
     cell = None
 
     outputs = ['cell']
+    # add defaults?
 
     def run(self, simulation):
         cell = simulation.space.find(self)

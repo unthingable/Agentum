@@ -1,26 +1,28 @@
 <html>
     <head>
-        <title>Minimal websocket application</title>
+        <title>Agentum runner</title>
         <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
         <script type="text/javascript">
+        var ws;
         $(function() {
             // Open up a connection to our server
             var url = "ws://192.168.3.137:9999/data";
             if ("MozWebSocket" in window) {
-                var ws = new MozWebSocket(url);
+                ws = new MozWebSocket(url);
             } else {
-                var ws = new WebSocket(url);
+                ws = new WebSocket(url);
             }
 
             // What do we do when we get a message?
             ws.onmessage = function(evt) {
-                $("#placeholder").append('<p>' + evt.data + '</p>')
+                $("#placeholder").append(evt.data + '\n');
+                handle_msg(evt.data);
             }
             // Just update our conn_status field with the connection status
             ws.onopen = function(evt) {
                 $('#conn_status').html('<b>Connected</b>');
-                ws.send("step");
-                ws.send("quit")
+                //ws.send("step");
+                //ws.send("quit")
             }
             ws.onerror = function(evt) {
                 $('#conn_status').html('<b>Error</b>');
@@ -29,13 +31,54 @@
                 $('#conn_status').html('<b>Closed</b>');
             }
 
+            var init_grid = function(v) {
+
+            };
+
+            var handle_msg = function(msg) {
+                var data = JSON.parse(msg);
+                var handle = handles;
+                for (var ii in data) {
+                    if (data[ii] in handle) {
+                        handle = handle[data[ii]];
+                        continue;
+                    }
+                    if (typeof(handle) === 'function') {
+                        var args = data.slice(ii);
+                        console.log('calling '+handle+' on ');
+                        console.log(args);
+                        switch(args.length) {
+                            case 1: handle(args[0]); break;
+                            case 2: handle(args[0],args[1]); break;
+                        }
+                        break;
+                    }
+                }
+            };
+
+            var handles = {
+                'sim': {
+                    'name': function(v) {$('#simname').html(v);},
+                    'space': {
+                        'grid': init_grid
+                    }
+                },
+                'step': function(v) {$('#stepnum').html(v);}
+            };
 
         });
     </script>
     </head>
     <body>
-        <h1>WebSocket Example</h1>
+        <h1 id='simname'>WebSocket Example</h1>
         <div id="conn_status">Not Connected</div>
-        <div id="placeholder" style="width:600px;height:300px;"></div>
+        <div>
+            <input type="button" id='step' value="step"/>
+            <span id='stepnum'>0</span>
+        </div>
+        <pre id="placeholder" style="width:600px;height:300px;"></pre>
+        <script>
+            $('#step').click(function(){ws.send("step");});
+        </script>
     </body>
 </html>

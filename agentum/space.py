@@ -47,7 +47,7 @@ class Cell(Propagator):
         self.point = point
 
     def id(self):
-        return str(self.point)
+        return self.point
 
     def __str__(self):
         return self.id()

@@ -1,16 +1,26 @@
 <html>
     <head>
         <title>Agentum runner</title>
-        <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+        <script type="text/javascript" src="/jquery-1.4.3.min.js"></script>
         <script type="text/javascript">
         var ws;
         $(function() {
             // Open up a connection to our server
-            var url = "ws://192.168.3.137:9999/data";
-            if ("MozWebSocket" in window) {
-                ws = new MozWebSocket(url);
+            // var url = "ws://192.168.3.137:9999/data";
+
+            var loc = window.location, new_uri;
+            if (loc.protocol === "https:") {
+                new_uri = "wss:";
             } else {
-                ws = new WebSocket(url);
+                new_uri = "ws:";
+            }
+            new_uri += "//" + loc.host + "/data";
+            // new_uri += loc.pathname + "/data";
+
+            if ("MozWebSocket" in window) {
+                ws = new MozWebSocket(new_uri);
+            } else {
+                ws = new WebSocket(new_uri);
             }
 
             // What do we do when we get a message?

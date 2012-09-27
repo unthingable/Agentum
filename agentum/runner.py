@@ -115,6 +115,7 @@ def run_main():
         from geventwebsocket.handler import WebSocketHandler
         from geventwebsocket import websocket
 
+
         def handle(ws):
             log.debug("Connected")
             worker = w.WorkerSerial()
@@ -140,9 +141,15 @@ def run_main():
             elif environ['PATH_INFO'] == "/data":
                 handle(environ['wsgi.websocket'])
             else:
+                path = environ['PATH_INFO'].strip('/') or 'grid.html'
+                FILE = os.path.join(os.path.dirname(__file__),
+                                    'static',
+                                    path)
+                #import ipdb; ipdb.set_trace()
                 response_body = open(FILE).read()
                 status = '200 OK'
                 headers = [('Content-type', 'text/html'), ('Content-Length', str(len(response_body)))]
+                #headers = [('Content-Length', str(len(response_body)))]
                 start_response(status, headers)
                 return [response_body]
 

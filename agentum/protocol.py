@@ -53,8 +53,12 @@ class Propagator(object):
     inputs = []
     outputs = []
     commands = []
+    __keys__ = []
 
     stream_name = 'set stream_name!'
+
+    def __init__(self):
+        self.__keys__ = self.inputs + self.outputs
 
     def id(self):
         if not self in ids:
@@ -73,6 +77,6 @@ class Propagator(object):
         object.__setattr__(self, key, value)
 
     def __fire__(self, keys=None):
-        keys = keys or self.outputs + self.inputs
+        keys = keys or self.inputs + self.outputs
         for key in keys:
             send([self.stream_name, self.id(), key, getattr(self, key)])

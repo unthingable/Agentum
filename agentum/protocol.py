@@ -71,3 +71,8 @@ class Propagator(object):
             log.debug(output)
             send(output)
         object.__setattr__(self, key, value)
+
+    def __fire__(self, keys=None):
+        keys = keys or self.outputs + self.inputs
+        for key in keys:
+            send([self.stream_name, self.id(), key, getattr(self, key)])

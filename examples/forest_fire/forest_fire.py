@@ -47,18 +47,20 @@ class Forest(MetaAgent):
 
 class ForestCell(Cell):
     states = ['empty', 'occupied', 'burning']
-    state = 'empty'
+    _state = 'empty'
+    state_num = 0
 
-    outputs = ['state']
+    outputs = ['state_num']
 
-    # @property
-    # def state(self):
-    #     return self._state
+    @property
+    def state(self):
+        return self._state
 
-    # @state.setter
-    # def state(self, new_state):
-    #     log.debug("Cell %s: %s" % (self, new_state))
-    #     self._state = new_state
+    @state.setter
+    def state(self, new_state):
+        # log.debug("Cell %s: %s" % (self, new_state))
+        self._state = new_state
+        self.state_num = self.states.index(new_state)
 
     def __str__(self):
         return "%s" % str(self.point)

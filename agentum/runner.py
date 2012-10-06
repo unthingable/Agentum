@@ -154,13 +154,13 @@ def run_main():
                 return [response_body]
 
         ws_server = pywsgi.WSGIServer(
-            ('', 9999), app,
+            ('', 9990), app,
             handler_class=WebSocketHandler)
         # http server: serves up static files
         # http_server = gevent.pywsgi.WSGIServer(
         #     ('', 8000),
         #     paste.urlparser.StaticURLParser(os.path.dirname(__file__)))
-
+        print "Connect to http://localhost:9990/"
         ws_server.serve_forever()
 
 def load_module(simmodule):

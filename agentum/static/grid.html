@@ -25,7 +25,8 @@
 
             // What do we do when we get a message?
             ws.onmessage = function(evt) {
-                $("#placeholder").append(evt.data + '\n');
+                //$("#placeholder").append(evt.data + '\n');
+                console.log(evt.data);
                 handle_msg(evt.data);
             }
             // Just update our conn_status field with the connection status
@@ -41,8 +42,14 @@
                 $('#conn_status').html('<b>Closed</b>');
             }
 
-            var init_grid = function(v) {
+            var pixel_size = 2;
 
+            var init_grid = function(dim) {
+                var newCanvas =
+                    $('<canvas/>',{'class':'grid'})
+                    .width(dim[0] * pixel_size)
+                    .height(dim[0] * pixel_size);
+                $('#placeholder').append(newCanvas);
             };
 
             var handle_msg = function(msg) {
@@ -57,10 +64,7 @@
                         var args = data.slice(ii);
                         console.log('calling '+handle+' on ');
                         console.log(args);
-                        switch(args.length) {
-                            case 1: handle(args[0]); break;
-                            case 2: handle(args[0],args[1]); break;
-                        }
+                        handle.apply(undefined, args);
                         break;
                     }
                 }
@@ -71,9 +75,14 @@
                     'name': function(v) {$('#simname').html(v);},
                     'space': {
                         'grid': init_grid
-                    }
+                    },
+                    'cell': draw_cell,
                 },
                 'step': function(v) {$('#stepnum').html(v);}
+            };
+
+            var draw_cell = function(index, param, value){
+
             };
 
         });
@@ -86,7 +95,7 @@
             <input type="button" id='step' value="step"/>
             <span id='stepnum'>0</span>
         </div>
-        <pre id="placeholder" style="width:600px;height:300px;"></pre>
+        <div id="placeholder"></div>
         <script>
             $('#step').click(function(){ws.send("step");});
         </script>

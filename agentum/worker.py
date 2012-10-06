@@ -59,7 +59,8 @@ class WorkerBase(object):
 
         # dirty hack to test the concept:
         protocol.send('sim name %s' % module.__name__)
-        protocol.send('sim space grid 100x100')
+        protocol.send('sim space grid'.split() +
+                      [self.sim.space.dimensions])
         protocol.send('cell all heat 0')
 
         # simulations.append(sim)

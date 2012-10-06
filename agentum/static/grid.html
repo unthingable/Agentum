@@ -2,6 +2,7 @@
     <head>
         <title>Agentum runner</title>
         <script type="text/javascript" src="/jquery-1.4.3.min.js"></script>
+        <script type="text/javascript" src="/jcanvas.js"></script>
         <script type="text/javascript">
         var ws;
         $(function() {
@@ -26,7 +27,7 @@
             // What do we do when we get a message?
             ws.onmessage = function(evt) {
                 //$("#placeholder").append(evt.data + '\n');
-                console.log(evt.data);
+                //console.log(evt.data);
                 handle_msg(evt.data);
             }
             // Just update our conn_status field with the connection status
@@ -44,17 +45,22 @@
 
             var pixel_size = 2;
 
+            var ctx = 0;
             var init_grid = function(dim) {
                 var newCanvas =
-                    $('<canvas/>',{'class':'grid'})
-                    .width(dim[0] * pixel_size)
-                    .height(dim[0] * pixel_size);
+                    $('<canvas/>')
+                    .width(dim[0] * 3)
+                    .height(dim[0] * 3);
                 $('#placeholder').append(newCanvas);
+                ctx = $('canvas')[0].getContext('2d');
             };
 
             var handle_msg = function(msg) {
                 var data = JSON.parse(msg);
                 var handle = handles;
+                if (!data[0] in handle)
+                    return;
+
                 for (var ii in data) {
                     if (data[ii] in handle) {
                         handle = handle[data[ii]];
@@ -62,28 +68,55 @@
                     }
                     if (typeof(handle) === 'function') {
                         var args = data.slice(ii);
-                        console.log('calling '+handle+' on ');
-                        console.log(args);
+
+                        // console.log('calling '+handle+' on ');
+                        // console.log(args);
+
                         handle.apply(undefined, args);
                         break;
                     }
                 }
             };
 
+            var maximums = {};
+            var defaults = {};
+            var draw_cell = function(index, param, value){
+                if (index === "all") {
+                    defaults[param] = value;
+                    return;
+                }
+                if (!(value < maximums[param]))
+                    maximums[param] = value + 1;
+                var fill = 'rgb(' + Math.round(value * 255 / maximums[param]) + ',0,0)';
+                ctx.fillStyle = fill;
+                var x = index[0] * 3;
+                var y = index[1] * 3;
+                //console.log(x);
+                ctx.fillRect(x, y, 3, 3);
+                //console.log(fill + " " + (param, value));
+                // $('canvas').drawRect({
+                //     fillStyle: fill,
+                //     x: index[0] * 3, y: index[1] * 3,
+                //     width: 3,
+                //     height: 3,
+                //     fromCenter: false,
+                //     scale: 1,
+                // })
+            };
+
+
             var handles = {
                 'sim': {
                     'name': function(v) {$('#simname').html(v);},
                     'space': {
-                        'grid': init_grid
+                        'grid': init_grid,
                     },
-                    'cell': draw_cell,
                 },
-                'step': function(v) {$('#stepnum').html(v);}
+                'step': function(v) {$('#stepnum').html(v);},
+                'cell': draw_cell,
+                'agent': function(v) {},
             };
-
-            var draw_cell = function(index, param, value){
-
-            };
+            console.log(handles);
 
         });
     </script>
@@ -94,10 +127,12 @@
         <div>
             <input type="button" id='step' value="step"/>
             <span id='stepnum'>0</span>
+            <input type="button" id='run' value="step 100"/>
         </div>
         <div id="placeholder"></div>
         <script>
             $('#step').click(function(){ws.send("step");});
+            $('#run').click(function(){ws.send("run 100");});
         </script>
     </body>
 </html>

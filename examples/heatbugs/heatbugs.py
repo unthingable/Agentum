@@ -87,14 +87,14 @@ class Bug(Agent):
 
 class Dissipator(MetaAgent):
     def run(self, simulation, cell):
-        emission_loss = cell.heat * simulation.transmission_coeff
+        emission_loss = cell.heat * simulation.transmission
         neighbors = simulation.space.neighbors(cell, r=1)
         for n in neighbors:
             # Only colder cells (positive delta) will absorb the heat.
             # Sum of transmissions cannot be greater that the total emission.
             delta = cell.heat - n.heat
             n.heat += emission_loss / len(neighbors)
-        cell.heat -= emission_loss + (cell.heat * simulation.sink_coeff)
+        cell.heat -= emission_loss + (cell.heat * simulation.sink)
 
 
 def setup(simulation):
@@ -107,6 +107,7 @@ def setup(simulation):
     unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
 
     # Randomly scatter the bugs around the space
+    simulation.metaagents.append(Dissipator())
     for n, cell in izip(range(simulation.numbugs), unoccupied_cell_iter):
         bug = Bug()
         log.debug("Adding agent %r" % bug)

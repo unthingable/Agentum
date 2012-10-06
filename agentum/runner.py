@@ -20,7 +20,7 @@ from agentum.server import WorkerCmd
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+#log.setLevel(logging.DEBUG)
 
 
 def arg_parser():

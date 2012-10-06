@@ -81,9 +81,12 @@ class WorkerBase(object):
 
     # slightly different semantics, due to the nature of metaagents
     def step_metaagent(self, cell):
+        protocol.active = False
         for metaagent in self.sim.metaagents:
             metaagent.run(self.sim, cell)
-
+        protocol.active = True
+        for cell in self.sim.space.cells():
+            cell.__fire__()
 
 class WorkerSerial(WorkerBase):
 

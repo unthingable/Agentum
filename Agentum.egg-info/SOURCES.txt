@@ -1,0 +1,15 @@
+setup.py
+Agentum.egg-info/PKG-INFO
+Agentum.egg-info/SOURCES.txt
+Agentum.egg-info/dependency_links.txt
+Agentum.egg-info/entry_points.txt
+Agentum.egg-info/requires.txt
+Agentum.egg-info/top_level.txt
+agentum/__init__.py
+agentum/agent.py
+agentum/protocol.py
+agentum/runner.py
+agentum/server.py
+agentum/simulation.py
+agentum/space.py
+agentum/worker.py

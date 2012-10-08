@@ -1,0 +1,5 @@
+setuptools
+simplejson
+greenlet
+gevent
+gevent-websocket

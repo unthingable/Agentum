@@ -1,0 +1,16 @@
+/**
+ * Created with JetBrains PhpStorm.
+ * Author: Kirill Cherkashin
+ * Date: 10/20/12
+ * Time: 12:10 AM
+ *
+ */
+
+body {
+    color: red !important;
+}
+
+#simulation {
+    width: 800px;
+    margin: 0 auto;
+}

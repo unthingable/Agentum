@@ -1,138 +1,67 @@
+<!DOCTYPE HTML>
 <html>
-    <head>
-        <title>Agentum runner</title>
-        <script type="text/javascript" src="/jquery-1.4.3.min.js"></script>
-        <script type="text/javascript" src="/jcanvas.js"></script>
-        <script type="text/javascript">
-        var ws;
-        $(function() {
-            // Open up a connection to our server
-            // var url = "ws://192.168.3.137:9999/data";
+<head>
+    <title>Agentum runner</title>
+    <style>
+        #simulation {
+            margin: 0 auto;
+            width: 960px;
+        }
 
-            var loc = window.location, new_uri;
-            if (loc.protocol === "https:") {
-                new_uri = "wss:";
-            } else {
-                new_uri = "ws:";
-            }
-            new_uri += "//" + loc.host + "/data";
-            // new_uri += loc.pathname + "/data";
+        /*.......| Controls                            |.......................*/
 
-            if ("MozWebSocket" in window) {
-                ws = new MozWebSocket(new_uri);
-            } else {
-                ws = new WebSocket(new_uri);
-            }
+        #controls {
+            overflow: hidden;
+            padding-bottom: 0.4em;
+        }
 
-            // What do we do when we get a message?
-            ws.onmessage = function(evt) {
-                //$("#placeholder").append(evt.data + '\n');
-                //console.log(evt.data);
-                handle_msg(evt.data);
-            }
-            // Just update our conn_status field with the connection status
-            ws.onopen = function(evt) {
-                $('#conn_status').html('<b>Connected</b>');
-                //ws.send("step");
-                //ws.send("quit")
-            }
-            ws.onerror = function(evt) {
-                $('#conn_status').html('<b>Error</b>');
-            }
-            ws.onclose = function(evt) {
-                $('#conn_status').html('<b>Closed</b>');
-            }
+        #controls li .property-name {
+            padding: 0 10px;
+        }
 
-            var pixel_size = 2;
+        #controls li.folder {
+            float: none;
+            overflow: hidden;
+            display: block;
+            padding: 15px 0;
+        }
 
-            var ctx = 0;
-            var init_grid = function(dim) {
-                var newCanvas =
-                    $('<canvas/>')
-                    .width(dim[0] * 3)
-                    .height(dim[0] * 3);
-                $('#placeholder').append(newCanvas);
-                ctx = $('canvas')[0].getContext('2d');
-            };
+        #controls li.function {
+            border: 1px #ddd solid;
+        }
 
-            var handle_msg = function(msg) {
-                var data = JSON.parse(msg);
-                var handle = handles;
-                if (!data[0] in handle)
-                    return;
+        #controls li.function:hover {
+            border: 1px #444 solid;
+            background-color: #f8f8f8;
+            cursor: pointer;
+        }
 
-                for (var ii in data) {
-                    if (data[ii] in handle) {
-                        handle = handle[data[ii]];
-                        continue;
-                    }
-                    if (typeof(handle) === 'function') {
-                        var args = data.slice(ii);
+        #controls li {
+            float: left;
+            margin-right: 4px;
+            line-height: 30px;
+        }
 
-                        // console.log('calling '+handle+' on ');
-                        // console.log(args);
+        #controls .c {
+            display: inline;
 
-                        handle.apply(undefined, args);
-                        break;
-                    }
-                }
-            };
+        }
 
-            var maximums = {};
-            var defaults = {};
-            var draw_cell = function(index, param, value){
-                if (index === "all") {
-                    defaults[param] = value;
-                    return;
-                }
-                if (!(value < maximums[param]))
-                    maximums[param] = value + 1;
-                var fill = 'rgb(' + Math.round(value * 255 / maximums[param]) + ',0,0)';
-                ctx.fillStyle = fill;
-                var x = index[0] * 3;
-                var y = index[1] * 3;
-                //console.log(x);
-                ctx.fillRect(x, y, 3, 3);
-                //console.log(fill + " " + (param, value));
-                // $('canvas').drawRect({
-                //     fillStyle: fill,
-                //     x: index[0] * 3, y: index[1] * 3,
-                //     width: 3,
-                //     height: 3,
-                //     fromCenter: false,
-                //     scale: 1,
-                // })
-            };
+        #controls ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        /*.......| Canvas                            |.......................*/
 
+        canvas {
+            outline: 1px #ddd solid;
+        }
 
-            var handles = {
-                'sim': {
-                    'name': function(v) {$('#simname').html(v);},
-                    'space': {
-                        'grid': init_grid,
-                    },
-                },
-                'step': function(v) {$('#stepnum').html(v);},
-                'cell': draw_cell,
-                'agent': function(v) {},
-            };
-            console.log(handles);
+    </style>
 
-        });
-    </script>
-    </head>
-    <body>
-        <h1 id='simname'>WebSocket Example</h1>
-        <div id="conn_status">Not Connected</div>
-        <div>
-            <input type="button" id='step' value="step"/>
-            <span id='stepnum'>0</span>
-            <input type="button" id='run' value="step 100"/>
-        </div>
-        <div id="placeholder"></div>
-        <script>
-            $('#step').click(function(){ws.send("step");});
-            $('#run').click(function(){ws.send("run 100");});
-        </script>
-    </body>
+    <script data-main="heatbugs.js" src="agentum/js/libs/require.js"></script>
+
+</head>
+<body></body>
 </html>

@@ -17,12 +17,13 @@ require.config( {
         agentum_layout:   'agentum/js/modules/views/layout',
         agentum_grid:     'agentum/js/modules/views/grid',
         agentum_controls: 'agentum/js/modules/views/controls',
+        agentum_statusbar: 'agentum/js/modules/views/statusbar',
         agentum_api:      'agentum/js/modules/api',
         agentum_sim:      'agentum/js/modules/sim'
     }
 } );
 
-define( "agentum/js/agentum", [ "agentum_router", "agentum_layout" , "agentum_api", "agentum_grid", "agentum_controls", "agentum_sim" ], function ( router, layout, api, grid, controls, sim ) {
+define( "agentum/js/agentum", [ "agentum_router", "agentum_layout" , "agentum_api", "agentum_grid", "agentum_controls", "agentum_sim", "agentum_statusbar" ], function ( router, layout, api, grid, controls, sim, statusbar ) {
     "use strict";
 
 
@@ -55,11 +56,13 @@ define( "agentum/js/agentum", [ "agentum_router", "agentum_layout" , "agentum_ap
     controls.add( sim, "step" );
     controls.add( sim, "run100" );
     controls.add( grid, "draw" );
+    statusbar.addStatus( sim.socket, "status" ).listen();
 
 
 
     sim.grid = grid;
     sim.controls = controls;
+    sim.statusbar = statusbar;
 
 
     return sim;

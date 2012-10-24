@@ -1988,7 +1988,7 @@ dat.GUI = dat.gui.GUI = (function ( css, saveDialogueContents, styleSheet, contr
         }
 
     }, false );
-    console.log( common );
+    
     common.extend(
 
         GUI.prototype,
@@ -2321,7 +2321,6 @@ dat.GUI = dat.gui.GUI = (function ( css, saveDialogueContents, styleSheet, contr
         if( params.color ) {
             controller = new ColorController( object, property );
         } else if( params.status ) {
-            console.log( "YES" );
             controller = new StatusController(object, property);
 
         } else {
@@ -3586,12 +3585,8 @@ dat.controllers.StatusController = (function (Controller, dom, common) {
     var StatusController = function(object, property) {
 
         StatusController.superclass.call(this, object, property);
-
-        var _this = this;
-
         this.__span = document.createElement('span');
         this.updateDisplay();
-
         this.domElement.appendChild(this.__span);
 
     };
@@ -3599,18 +3594,12 @@ dat.controllers.StatusController = (function (Controller, dom, common) {
     StatusController.superclass = Controller;
 
     common.extend(
-
         StatusController.prototype,
         Controller.prototype,
-
         {
 
             updateDisplay: function() {
-                // Stops the caret from moving on account of:
-                // keyup -> setValue -> updateDisplay
-
-                    this.__span.innerHTML = this.getValue();
-
+                this.__span.innerHTML = this.getValue();
                 return StatusController.superclass.prototype.updateDisplay.call(this);
             }
 

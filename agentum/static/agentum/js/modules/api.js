@@ -18,38 +18,44 @@ define( "agentum_api", function () {
 
         "listen": function ( url ) {
             var _callbacks = {};
+            var _queue = [];
+            var socket = new _Socket( url );
+
+
             var connection = {
-                status: "connecting",
-                on:   function ( scope, model ) {
+                status:        "connecting",
+                on:            function ( scope, model ) {
                     _callbacks[scope] = model;
                     return this;
                 },
-                send: function ( message ) {
-                    if( socket.readyState ){
+                send:          function ( message ) {
+                    if( socket.readyState ) {
                         socket.send( message );
                     } else {
                         _queue.push( message );
                     }
 
                     return this;
+                },
+                disconnect: function () {
+                    socket.close();
                 }
 
-            };
-            var _queue = [];
-            var socket = new _Socket( url );
 
-            socket.onerror = function (  ) {
+            };
+
+            socket.onerror = function () {
                 connection.status = "connection error";
             };
-            socket.onclose = function (  ) {
+            socket.onclose = function () {
                 connection.status = "connection closed";
             };
 
-            socket.onopen = function (  ) {
+            socket.onopen = function () {
                 connection.status = "connected to: " + url;
                 for( var i in _queue ) {
                     if( _queue.hasOwnProperty( i ) ) {
-                        socket.send(_queue[i]);
+                        socket.send( _queue[i] );
                     }
                 }
 
@@ -64,7 +70,7 @@ define( "agentum_api", function () {
                     _callbacks[scope]( message.shift(), message );
                 } else if( callback_type === "object" ) {
                     if( typeof _callbacks[scope].trigger === "function" ) {
-                        _callbacks[scope].trigger.apply(_callbacks[scope], message );
+                        _callbacks[scope].trigger.apply( _callbacks[scope], message );
                     }
                 }
             };

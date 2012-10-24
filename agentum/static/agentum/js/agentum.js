@@ -57,6 +57,8 @@ define( "agentum/js/agentum", [ "agentum_router", "agentum_layout" , "agentum_ap
     controls.add( sim, "run100" );
     controls.add( grid, "draw" );
     statusbar.addStatus( sim.socket, "status" ).listen();
+    var d = statusbar.add( sim.socket, "disconnect" );
+    console.log( d );
 
 
 

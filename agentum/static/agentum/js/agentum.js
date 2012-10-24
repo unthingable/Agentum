@@ -47,8 +47,13 @@ define( "agentum/js/agentum", [ "agentum_router", "agentum_layout" , "agentum_ap
         sim.socket.send( "step" );
     };
 
+    sim.run100 = function () {
+        sim.socket.send( "run 100" );
+    };
+
 
     controls.add( sim, "step" );
+    controls.add( sim, "run100" );
     controls.add( grid, "draw" );
 
 

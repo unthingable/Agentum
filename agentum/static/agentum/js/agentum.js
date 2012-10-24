@@ -14,11 +14,11 @@ require.config( {
         backbone:         'agentum/js/libs/backbone-min',
         dat_gui:          'agentum/js/libs/dat.gui',
         agentum_router:   'agentum/js/modules/router',
-        agentum_layout:   'agentum/js/modules/layout',
+        agentum_layout:   'agentum/js/modules/views/layout',
+        agentum_grid:     'agentum/js/modules/views/grid',
+        agentum_controls: 'agentum/js/modules/views/controls',
         agentum_api:      'agentum/js/modules/api',
-        agentum_sim:      'agentum/js/modules/sim',
-        agentum_grid:     'agentum/js/modules/grid',
-        agentum_controls: 'agentum/js/modules/controls'
+        agentum_sim:      'agentum/js/modules/sim'
     }
 } );
 

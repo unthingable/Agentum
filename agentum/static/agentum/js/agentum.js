@@ -57,6 +57,7 @@ define( "agentum/js/agentum", [ "agentum_router", "agentum_layout" , "agentum_ap
     controls.add( grid, "draw" );
 
 
+
     sim.grid = grid;
     sim.controls = controls;
 

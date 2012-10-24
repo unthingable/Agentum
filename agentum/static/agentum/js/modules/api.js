@@ -18,10 +18,35 @@ define( "agentum_api", function () {
 
         "listen": function ( url ) {
             var _callbacks = {};
+            var connection = {
+                status: "connecting",
+                on:   function ( scope, model ) {
+                    _callbacks[scope] = model;
+                    return this;
+                },
+                send: function ( message ) {
+                    if( socket.readyState ){
+                        socket.send( message );
+                    } else {
+                        _queue.push( message );
+                    }
+
+                    return this;
+                }
+
+            };
             var _queue = [];
             var socket = new _Socket( url );
 
+            socket.onerror = function (  ) {
+                connection.status = "connection error";
+            };
+            socket.onclose = function (  ) {
+                connection.status = "connection closed";
+            };
+
             socket.onopen = function (  ) {
+                connection.status = "connected to: " + url;
                 for( var i in _queue ) {
                     if( _queue.hasOwnProperty( i ) ) {
                         socket.send(_queue[i]);
@@ -45,22 +70,7 @@ define( "agentum_api", function () {
             };
 
 
-            return {
-                on:   function ( scope, model ) {
-                    _callbacks[scope] = model;
-                    return this;
-                },
-                send: function ( message ) {
-                    if( socket.readyState ){
-                        socket.send( message );
-                    } else {
-                        _queue.push( message );
-                    }
-
-                    return this;
-                }
-
-            }
+            return connection;
 
 
         }

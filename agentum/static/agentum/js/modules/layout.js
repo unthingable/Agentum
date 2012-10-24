@@ -33,6 +33,7 @@ define( "agentum_layout", ["backbone", "agentum_sim"], function ( Backbone, App 
             this.$header = $( _div ).attr( "id", "header" );
             this.$control = $( _div ).attr( "id", "controls" );
             this.$sidebar = $( _div ).attr( "id", "sidebar" );
+            this.$statusbar = $( _div ).attr( "id", "statusbar" );
             this.$grid = $( _div ).attr( "id", "grid" );
             this.$data = $( _div ).attr( "id", "data" )
                 .append( this.$sidebar )
@@ -44,6 +45,8 @@ define( "agentum_layout", ["backbone", "agentum_sim"], function ( Backbone, App 
                     .append( this.$header )
                     .append( this.$control )
                     .append( this.$data )
+                    .append( this.$statusbar  )
+
             );
 
         }

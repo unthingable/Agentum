@@ -12,6 +12,7 @@ import pkgutil
 import logging
 import optparse
 import signal
+import mimetypes
 
 from agentum.simulation import Simulation
 from agentum import worker as w
@@ -146,12 +147,16 @@ def run_main():
                                     'static',
                                     path)
                 #import ipdb; ipdb.set_trace()
-                response_body = open(FILE).read()
-                status = '200 OK'
-                headers = [('Content-type', 'text/html'), ('Content-Length', str(len(response_body)))]
-                #headers = [('Content-Length', str(len(response_body)))]
-                start_response(status, headers)
-                return [response_body]
+                if os.path.isfile(FILE):
+                    response_body = open(FILE).read()
+                    status = '200 OK'
+                    mimetype = mimetypes.guess_type(FILE)[0]
+                    headers = [('Content-type', mimetype),
+                               ('Content-Length', str(len(response_body)))]
+                    start_response(status, headers)
+                    return [response_body]
+                else:
+                    return None
 
         ws_server = pywsgi.WSGIServer(
             ('', 9990), app,

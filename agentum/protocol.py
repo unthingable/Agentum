@@ -16,6 +16,8 @@ step [num]
 
 agent|cell <id>|all in|out param [param [param] ...]
 agent|cell <id>|all param value [param value [param value] ...]
+Packed frame:
+cell frame param [value, ...]
 
 Input:
 

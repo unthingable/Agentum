@@ -29,8 +29,11 @@ agent|cell <id> param value
 from collections import defaultdict
 import json
 import logging
+
+from agentum import settings
+
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(settings.LOGLEVEL)
 
 queue = None
 id_seq = defaultdict(int)

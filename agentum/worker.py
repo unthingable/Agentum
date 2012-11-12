@@ -12,11 +12,11 @@ from gevent.pool import Group
 from gevent.queue import Queue, Empty
 
 from agentum.simulation import Simulation
-from agentum import protocol
+from agentum import protocol, settings
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(settings.LOGLEVEL)
 
 step_event = AsyncResult()
 result_queue = Queue()

@@ -11,11 +11,12 @@ from functools import wraps
 import math
 import logging
 
-from protocol import Propagator
+from agentum.protocol import Propagator
+from agentum import settings
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(settings.LOGLEVEL)
 
 
 def memoize(f):

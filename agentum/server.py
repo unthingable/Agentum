@@ -29,10 +29,11 @@ from gevent.pool import Group
 from gevent.queue import Queue, Empty
 
 from agentum.simulation import Simulation
+from agentum import settings
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(settings.LOGLEVEL)
 
 
 class WorkerCmd(Cmd):

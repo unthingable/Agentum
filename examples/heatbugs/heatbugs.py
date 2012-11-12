@@ -5,10 +5,11 @@ import logging
 from agentum.simulation import Simulation
 from agentum.agent import Agent, MetaAgent
 from agentum.space import Cell, GridSpace as CellSpace
+from agentum import settings
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(settings.LOGLEVEL)
 
 
 class HeatBugs(Simulation):

@@ -19,9 +19,11 @@ from agentum import worker as w
 from agentum import protocol
 from agentum.server import WorkerCmd
 
+from . import settings
+
 logging.basicConfig()
 log = logging.getLogger(__name__)
-#log.setLevel(logging.DEBUG)
+log.setLevel(settings.LOGLEVEL)
 
 
 def arg_parser():

@@ -1,4 +1,0 @@
-
-        [console_scripts]
-        agentum = agentum.runner:run_main
-    

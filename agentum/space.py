@@ -40,7 +40,7 @@ class Cell(Model):
     """
     The basic element of our world. Must be hashable.
     """
-    __slots__ = "properties", "agents"
+    #__slots__ = "properties", "agents"
     stream_name = "cell"
     point = None
 

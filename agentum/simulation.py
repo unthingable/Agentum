@@ -1,10 +1,10 @@
 '''
 Simulation is agent's access to the simulated world.
 '''
-from protocol import Propagator
+from .model import Model
 
 
-class Simulation(Propagator):
+class Simulation(Model):
 
     stream_name = 'sim'
 

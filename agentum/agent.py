@@ -1,7 +1,7 @@
-from protocol import Propagator
+from .model.model import Model  # hm
 
 
-class Agent(Propagator):
+class Agent(Model):
 
     stream_name = 'agent'
 

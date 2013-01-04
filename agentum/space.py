@@ -11,7 +11,7 @@ from functools import wraps
 import math
 import logging
 
-from agentum.protocol import Propagator
+from agentum.model.model import Model
 from agentum import settings
 
 logging.basicConfig()
@@ -24,6 +24,7 @@ def memoize(f):
     Warning: do not return iterators from memoized functions!
     """
     cache = {}
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         key = (args, tuple(kwargs.items()))
@@ -33,8 +34,9 @@ def memoize(f):
             return cache.setdefault(key, f(*args, **kwargs))
     return decorated_function
 
+
 # how about: a cell is responsible for communicating its state changes
-class Cell(Propagator):
+class Cell(Model):
     """
     The basic element of our world. Must be hashable.
     """
@@ -53,11 +55,13 @@ class Cell(Propagator):
     def __str__(self):
         return self.id()
 
+
 class SparseSpace(object):
     """
     N-dimensional cartesian space.
     Agents can inspect r-neighborhoods and move.
     """
+
 
 class CellSpace(object):
     """
@@ -75,25 +79,32 @@ class CellSpace(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def cells(self, traverse=None): pass
+    def cells(self, traverse=None):
+        pass
 
     @abstractmethod
-    def neighbors(self, cell, r=1): pass
+    def neighbors(self, cell, r=1):
+        pass
 
     @abstractmethod
-    def find(self, agent): pass
+    def find(self, agent):
+        pass
 
     @abstractmethod
-    def move(self, agent, cell): pass
+    def move(self, agent, cell):
+        pass
 
     @abstractmethod
-    def add_agent(self, agent, cell): pass
+    def add_agent(self, agent, cell):
+        pass
 
     @abstractmethod
-    def del_agent(self, agent): pass
+    def del_agent(self, agent):
+        pass
 
     @abstractmethod
-    def agents(self, with_cells=False): pass
+    def agents(self, with_cells=False):
+        pass
 
 #    @abstractmethod
 #    def distance(self, node, r=1): pass
@@ -101,13 +112,15 @@ class CellSpace(object):
     @staticmethod
     def tr_random(items):
         """
-        Full random node space traversal. All nodes guaranteed to be visited once.
+        Full random node space traversal.
+        All nodes guaranteed to be visited once.
         """
         from collections import deque
         remaining = deque(items)
         while remaining:
             remaining.rotate(choice(range(len(remaining))))
             yield remaining.pop()
+
 
 #TODO: rename :)
 def propertinator(properties):
@@ -129,32 +142,34 @@ def propertinator(properties):
         if not hasattr(p, "__iter__"):
             property_names.append(p)
         elif hasattr(p, "iteritems"):
-            for k,v in p.iteritems():
+            for k, v in p.iteritems():
                 property_names.append(k)
             defaults.update(p)
         elif len(p) == 2:
-            k,v = p
+            k, v = p
             property_names.append(k)
             defaults[k] = v
         else:
-            raise Exception("Invalid property structure: %s" % repr(properties))
+            raise Exception("Invalid property structure: %s"
+                            % repr(properties))
 
     class PropertyClass(object):
         __slots__ = tuple(property_names + ["_defaults"])
         _defaults = defaults
 
         def __init__(self):
-            for k,v in self._defaults.iteritems():
-                setattr(self,k,v)
+            for k, v in self._defaults.iteritems():
+                setattr(self, k, v)
 
     return PropertyClass
+
 
 class GridSpace(CellSpace):
     """
     GridSpace implemented as N-dimensional rectangular grid.
     """
 
-    def __init__(self, cell_fn, dimensions=(100,100), names=None):
+    def __init__(self, cell_fn, dimensions=(100, 100), names=None):
         """
         dimensions: list of dimensions
         names:      optional list of dimension names
@@ -170,9 +185,9 @@ class GridSpace(CellSpace):
         # Important to note: functions inside the tuple are evaluated for
         # _every_ tuple, not just once.
         self.idx_cell_map = dict((tuple(xyz), cell_fn(tuple(xyz)))
-            for xyz in product(*imap(xrange, dimensions)))
+                                 for xyz in product(*imap(xrange, dimensions)))
         self.cell_idx_map = {}
-        for idx,cell in self.idx_cell_map.iteritems():
+        for idx, cell in self.idx_cell_map.iteritems():
             self.cell_idx_map[cell] = idx
             # A simple shortcut, for now: a special attribute to let the
             # cell know where it is.
@@ -183,7 +198,8 @@ class GridSpace(CellSpace):
         log.debug("Initialized space %s" % __name__)
 
     # Expose coordinates
-    def __getitem__(self, xyz): return self.idx_cell_map[xyz]
+    def __getitem__(self, xyz):
+        return self.idx_cell_map[xyz]
 
     def __setitem__(self, xyz, item):
         self.idx_cell_map[xyz] = item
@@ -198,16 +214,18 @@ class GridSpace(CellSpace):
         return self.cell_idx_map[cell]
 
     @property
-    def dimensions(self): return self._dimensions
+    def dimensions(self):
+        return self._dimensions
 
     def __len__(self):
         return len(self.idx_cell_map)
 
     # without memoization this can be a little slow
     def _get_neighbor_indexes(self, xyz, r=1):
-        ranges = (xrange(x-r, x+r+1) for x in xyz)
+        ranges = (xrange(x - r, x + r + 1) for x in xyz)
         # wraparound modulo dimension
-        ranges = (set(x%y for x in r) for r,y in izip(ranges, self.dimensions))
+        ranges = (set(x % y for x in r)
+                  for r, y in izip(ranges, self.dimensions))
         # all the nodes except center
         indexes = ifilter(lambda x: x != xyz, product(*ranges))
         return indexes
@@ -219,8 +237,8 @@ class GridSpace(CellSpace):
         return [self.idx_cell_map[idx] for idx in indexes]
 
     def distance(self, a, b):
-        a,b = [self.cell_idx_map[x] for x in (a,b)]
-        return math.sqrt(sum((ax - bx) ** 2 for ax,bx in izip(a,b)))
+        a, b = [self.cell_idx_map[x] for x in (a, b)]
+        return math.sqrt(sum((ax - bx) ** 2 for ax, bx in izip(a, b)))
 
     # TODO: there is probably a better way to expose the agent-cell map.
     # Maybe expose it directly?
@@ -255,7 +273,8 @@ class GridSpace(CellSpace):
 #             for node, data in self.graph.nodes_iter(data=True):
 #                 data[self.cell_key] = cell_fn()
 
-#     def __getitem__(self, index): return self.graph.node[index][self.cell_key]
+#     def __getitem__(self, index):
+#        return self.graph.node[index][self.cell_key]
 
 #     def __setitem__(self, index, item):
 #         self.graph.node[index][self.cell_key] = item

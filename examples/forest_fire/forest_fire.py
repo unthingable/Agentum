@@ -1,6 +1,7 @@
 from random import random
 import logging
 
+from agentum.model.field import State
 from agentum.simulation import Simulation
 from agentum.agent import MetaAgent
 from agentum.space import Cell, GridSpace as CellSpace

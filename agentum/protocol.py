@@ -28,16 +28,8 @@ agent|cell <id> param value
 
 from collections import defaultdict
 import json
-import logging
-
-from agentum import settings
-
-log = logging.getLogger(__name__)
-log.setLevel(settings.LOGLEVEL)
 
 queue = None
-id_seq = defaultdict(int)
-ids = {}
 
 # questionable hack
 active = True
@@ -48,40 +40,3 @@ def send(obj):
         if isinstance(obj, (str, unicode)):
             obj = obj.split()
         queue.put(json.dumps(obj))
-
-
-class Propagator(object):
-    """
-    A mixin that will inspect input/output/command fields and wire
-    stuff up.
-    """
-    inputs = []
-    outputs = []
-    commands = []
-    __keys__ = []
-
-    stream_name = 'set stream_name!'
-
-    def __init__(self):
-        self.__keys__ = self.inputs + self.outputs
-
-    def id(self):
-        if not self in ids:
-            id_seq[self.__class__] += 1
-            ids[self] = id_seq[self.__class__]
-        return str(ids[self])
-
-    def __setattr__(self, key, value):
-        # May have to optimize this later
-        if active and (key in self.inputs or key in self.outputs):
-            # tell the world the value has changed
-            output = [self.stream_name, self.id(), key, value]
-            # o = ' '.join(output)
-            log.debug(output)
-            send(output)
-        object.__setattr__(self, key, value)
-
-    def __fire__(self, keys=None):
-        keys = keys or self.inputs + self.outputs
-        for key in keys:
-            send([self.stream_name, self.id(), key, getattr(self, key)])

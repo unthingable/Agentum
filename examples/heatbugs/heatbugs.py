@@ -4,6 +4,7 @@ import logging
 
 from agentum.simulation import Simulation
 from agentum.agent import Agent, MetaAgent
+from agentum.model import field
 from agentum.space import Cell, GridSpace as CellSpace
 from agentum import settings
 
@@ -32,10 +33,9 @@ simulation = HeatBugs
 
 
 # A cell can be anything: a dict, a list, an object, etc..
-# Here we use slots as an example of compact storage.
 class BugCell(Cell):
-    __slots__ = "bugs", "heat"
-    outputs = ['heat']
+    __slots__ = 'bugs'
+    heat = field.Float()
 
     def __init__(self, point):
         # more elegant way to do this?
@@ -46,10 +46,7 @@ class BugCell(Cell):
 
 class Bug(Agent):
     happiness = 0
-    cell = None
-
-    outputs = ['cell']
-    # add defaults?
+    cell = field.Integer()
 
     def run(self, simulation):
         cell = simulation.space.find(self)
@@ -86,6 +83,7 @@ class Bug(Agent):
         self.cell = new_cell.id()
         simulation.space.move(self, new_cell)
 
+
 class Dissipator(MetaAgent):
     def run(self, simulation, cell):
         emission_loss = cell.heat * simulation.transmission
@@ -93,7 +91,6 @@ class Dissipator(MetaAgent):
         for n in neighbors:
             # Only colder cells (positive delta) will absorb the heat.
             # Sum of transmissions cannot be greater that the total emission.
-            delta = cell.heat - n.heat
             n.heat += emission_loss / len(neighbors)
         cell.heat -= emission_loss + (cell.heat * simulation.sink)
 

@@ -10,7 +10,7 @@ import sys
 import os
 import pkgutil
 import logging
-import optparse
+import argparse
 import signal
 import mimetypes
 
@@ -27,25 +27,19 @@ log.setLevel(settings.LOGLEVEL)
 
 
 def arg_parser():
-    usage = "usage: %prog [options] [file]"
-    parser = optparse.OptionParser(usage)
+    parser = argparse.ArgumentParser()
 
-    parser.add_option("-s", dest="steps", default=100,
-                      help="The number of simulation steps"
+    # parser.add_option("-s", dest="steps", default=100,
+    #                   help="The number of simulation steps"
+    #                   )
+
+    parser.add_argument("-p", dest="plain",
+                      action="store_true",
+                      help="Launch plain telnet console"
                       )
-
-    parser.add_option("-g", dest="gui", default=False,
-                      help="Launch the GUI"
-                      )
-
-    # How to add no argument options?
-    # parser.add_option("-c", "--controller-wait", dest="wait", default=False,
-    #                   help="Wait for controller connection")
+    parser.add_argument('module')
 
     return parser
-    options, args = parser.parse_args()
-    # import ipdb; ipdb.set_trace()
-    return options, args
 
 
 # rudimentary, needs work
@@ -74,18 +68,17 @@ def run_main():
     gevent.signal(signal.SIGHUP, gevent.shutdown)
 
     parser = arg_parser()
-    simmodule = sys.argv[-1]
+    args = parser.parse_args()
+    simmodule = args.module
     module = load_module(simmodule)
 
     load_module_config(parser, module)
-    options, args = parser.parse_args()
-    update_module_config(options, module)
 
     #worker = w.WorkerSerial()
     # if not options.gui:
     #     worker.load(module)
     #     worker.run()
-    if options.gui:
+    if args.plain:
         def handle(socket, address):
             log.debug("Connected: %s" % str(address))
             socket.send("Welcome to simulation server\n")

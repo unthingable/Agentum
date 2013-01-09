@@ -95,11 +95,11 @@ class WorkerSerial(WorkerBase):
         # Run agents
         map(self.step_agent, sim.agents)
         # Run metaagents
-        protocol.active = False
+        # protocol.active = False
         map(self.step_metaagent, sim.space.cells())
-        protocol.active = True
-        for cell in self.sim.space.cells():
-            cell.__fire__()
+        # protocol.active = True
+        # for cell in self.sim.space.cells():
+        #     cell.__fire__()
         # This is a good place to emit state updates and such
 
 

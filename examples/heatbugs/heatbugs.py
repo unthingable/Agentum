@@ -35,18 +35,17 @@ simulation = HeatBugs
 # A cell can be anything: a dict, a list, an object, etc..
 class BugCell(Cell):
     __slots__ = 'bugs'
-    heat = field.Float()
+    heat = field.Float(default=0, quant=1)
 
     def __init__(self, point):
         # more elegant way to do this?
         Cell.__init__(self, point)
-        self.heat = 0
         self.bugs = set()
 
 
 class Bug(Agent):
     happiness = 0
-    cell = field.Integer()
+    cell = field.Field()
 
     def run(self, simulation):
         cell = simulation.space.find(self)

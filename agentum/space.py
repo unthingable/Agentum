@@ -11,7 +11,7 @@ from functools import wraps
 import math
 import logging
 
-from agentum.model.model import Model
+from agentum.model import Model
 from agentum import settings
 
 logging.basicConfig()

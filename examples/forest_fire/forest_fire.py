@@ -1,7 +1,7 @@
 from random import random
 import logging
 
-from agentum.model.field import State
+from agentum.model import field
 from agentum.simulation import Simulation
 from agentum.agent import MetaAgent
 from agentum.space import Cell, GridSpace as CellSpace
@@ -19,12 +19,10 @@ log.setLevel(settings.LOGLEVEL)
 
 
 class ForestFire(Simulation):
-    ignition = 0.3
-    fill = 0.5
-    dimensions = (100, 100)
+    ignition = field.Float(0.3)
+    fill = field.Float(0.5)
+    dimensions = field.Field((100, 100))
 
-    inputs = ['ignition', 'fill']
-    outputs = ['dimensions']
 
 simulation = ForestFire
 

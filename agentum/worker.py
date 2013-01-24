@@ -52,16 +52,17 @@ class WorkerBase(object):
             raise Exception("No setup() found in module %s" % module.__name__)
         log.info("Loading simulation %s" % module.__name__)
 
-        protocol.active = False
+        # protocol.active = False
         self.sim = module.simulation()
         setup(self.sim)
         protocol.active = True
 
         # dirty hack to test the concept:
-        protocol.send('sim name %s' % module.__name__)
+        protocol.send('sim name %s' % module.__name__, compress=False)
         protocol.send('sim space grid'.split() +
-                      [self.sim.space.dimensions])
-        protocol.send('cell all heat 0')
+                             [self.sim.space.dimensions],
+                      compress=False)
+        protocol.send('cell heat 0', compress=False)
 
         # simulations.append(sim)
         # ...
@@ -100,7 +101,8 @@ class WorkerSerial(WorkerBase):
         # protocol.active = True
         # for cell in self.sim.space.cells():
         #     cell.__fire__()
-        # This is a good place to emit state updates and such
+        # Instead:
+        protocol.flush()
 
 
 class WorkerGevent(WorkerBase):

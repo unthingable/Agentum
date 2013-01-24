@@ -28,15 +28,44 @@ agent|cell <id> param value
 
 from collections import defaultdict
 import json
+from operator import itemgetter
 
+# This is downstream, let it do its own thing
 queue = None
+
+# This is between us and downstream
+_buffer_tree = {}
 
 # questionable hack
 active = True
 
-
-def send(obj):
+def send(obj, compress=True):
     if queue:
         if isinstance(obj, (str, unicode)):
             obj = obj.split()
-        queue.put(json.dumps(obj))
+        if compress:
+            _buffer(obj)
+        else:
+            queue.put(json.dumps(obj))
+
+
+def flush():
+    queue.put(json.dumps(_buffer_tree))
+    _buffer_tree.clear()
+
+
+def _buffer(obj, current_dict=_buffer_tree):
+    '''
+    Buffer a list/tuple object for subsequent compression.
+    '''
+    if len(obj) < 0:
+        return
+    if len(obj) == 1:
+        # This should never happen, but if it does
+        # we are prepared.
+        current_dict[obj[0]] = None
+    elif len(obj) == 2:
+        current_dict[obj[0]] = obj[1]
+    else:
+        d = current_dict.setdefault(obj[0], {})
+        _buffer(obj[1:], d)

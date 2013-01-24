@@ -9,6 +9,7 @@ setup(
     install_requires=[
         'setuptools',
         'simplejson',
+#        'mockcache',
 #        'tornado',
 #        'pyzmq',
         'greenlet',

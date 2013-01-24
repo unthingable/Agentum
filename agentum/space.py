@@ -11,7 +11,7 @@ from functools import wraps
 import math
 import logging
 
-from agentum.model import Model
+from agentum.model import Model, field
 from agentum import settings
 
 logging.basicConfig()
@@ -42,15 +42,15 @@ class Cell(Model):
     """
     #__slots__ = "properties", "agents"
     stream_name = "cell"
-    point = None
+    point = field.Field()
 
     def __init__(self, point, properties=None):
         self.agents = set()
         self.properties = properties or {}
         self.point = point
 
-    def id(self):
-        return self.point
+    # def id(self):
+    #     return self.point
 
     def __str__(self):
         return self.id()

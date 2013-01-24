@@ -45,9 +45,6 @@ class Model(object):
 
     stream_name = 'set stream_name!'
 
-    # def __init__(self):
-    #     self.__keys__ = self.inputs + self.outputs
-
     def id(self):
         '''
         Sequential ID of the object.
@@ -64,7 +61,7 @@ class Model(object):
             qvalue = field.quantize(value, getattr(self, key))
             # Tell the world the value has changed
             if qvalue:
-                output = [self.stream_name, self.id(), key, value]
+                output = [self.stream_name, key, self.id(), value]
                 # o = ' '.join(output)
                 log.debug(output)
                 protocol.send(output)
@@ -73,5 +70,5 @@ class Model(object):
     def __fire__(self, keys=None):
         keys = keys or self._fields.keys()
         for key in keys:
-            protocol.send([self.stream_name, self.id(), key,
+            protocol.send([self.stream_name, key, self.id(),
                            getattr(self, key)])

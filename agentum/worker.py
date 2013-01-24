@@ -63,7 +63,7 @@ class WorkerBase(object):
                              [self.sim.space.dimensions],
                       compress=False)
         protocol.send('cell heat 0', compress=False)
-
+        protocol.flush()
         # simulations.append(sim)
         # ...
 

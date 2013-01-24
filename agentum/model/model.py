@@ -9,7 +9,8 @@ log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
 
 # Stop interpreter "not defined" complaints
-Model = None
+class Model:
+    pass
 
 
 class ModelMeta(type):
@@ -20,7 +21,7 @@ class ModelMeta(type):
 
         # Inherit parent fields
         for base in bases:
-            if base == Model:
+            if issubclass(base, Model):
                 base_fields = getattr(base, '_fields', None)
                 if base_fields:
                     fields.update(base_fields)

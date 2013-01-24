@@ -47,6 +47,7 @@ class Cell(Model):
     def __init__(self, point, properties=None):
         self.agents = set()
         self.properties = properties or {}
+        # import ipdb; ipdb.set_trace()
         self.point = point
 
     # def id(self):

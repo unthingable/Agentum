@@ -75,7 +75,8 @@ class WorkerBase(object):
                  (self.module.__name__, steps))
         for n in zrange(steps):
             # TODO: get messages and stop if requested, otherwise:
-            self.step()
+            self.step(flush=False)
+        protocol.flush()
 
     def step_agent(self, agent):
         agent.run(self.sim)
@@ -87,7 +88,7 @@ class WorkerBase(object):
 
 class WorkerSerial(WorkerBase):
 
-    def step(self):
+    def step(self, flush=True):
         self.stepnum += 1
         log.debug("Step: %d" % self.stepnum)
         protocol.send(("step", self.stepnum))
@@ -102,7 +103,8 @@ class WorkerSerial(WorkerBase):
         # for cell in self.sim.space.cells():
         #     cell.__fire__()
         # Instead:
-        protocol.flush()
+        if flush:
+            protocol.flush()
 
 
 class WorkerGevent(WorkerBase):

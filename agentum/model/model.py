@@ -8,6 +8,7 @@ from .field import Field
 log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
 
+
 # Stop interpreter "not defined" complaints
 class Model:
     pass

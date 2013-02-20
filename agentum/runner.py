@@ -83,6 +83,7 @@ def run_main():
             log.debug("Connected: %s" % str(address))
             socket.send("Welcome to simulation server\n")
             worker = w.WorkerSerial()
+
             class queue(object):
                 def put(self, obj):
                     socket.send("%s\n" % obj)
@@ -111,10 +112,10 @@ def run_main():
         from geventwebsocket.handler import WebSocketHandler
         from geventwebsocket import websocket
 
-
         def handle(ws):
             log.debug("Connected")
             worker = w.WorkerSerial()
+
             class queue(object):
                 def put(self, obj):
                     ws.send(obj)
@@ -162,6 +163,7 @@ def run_main():
         #     paste.urlparser.StaticURLParser(os.path.dirname(__file__)))
         print "Connect to http://localhost:9990/"
         ws_server.serve_forever()
+
 
 def load_module(simmodule):
     # options, args = parse_args()

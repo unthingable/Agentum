@@ -77,7 +77,7 @@ class WorkerBase(object):
         for n in zrange(steps):
             # TODO: get messages and stop if requested, otherwise:
             self.step(flush=False)
-        protocol.flush()
+        protocol.flush(lambda x: ['frame', self.stepnum, x])
 
     def step_agent(self, agent):
         agent.run(self.sim)

@@ -39,6 +39,7 @@ _buffer_tree = {}
 # questionable hack
 active = True
 
+
 def send(obj, compress=True):
     if queue:
         if isinstance(obj, (str, unicode)):
@@ -49,8 +50,11 @@ def send(obj, compress=True):
             queue.put(json.dumps(obj))
 
 
-def flush():
-    queue.put(json.dumps(_buffer_tree))
+def flush(wrapper=None):
+    out = _buffer_tree
+    if wrapper:
+        out = wrapper(out)
+    queue.put(json.dumps(out))
     _buffer_tree.clear()
 
 

@@ -4,14 +4,14 @@ http://stackoverflow.com/questions/10656953/redis-gevent-poor-performance-what-a
 """
 
 import logging
-from cmd import Cmd
+# from cmd import Cmd
 import gevent
 from gevent.event import AsyncResult
-from gevent.server import StreamServer
+#from gevent.server import StreamServer
 from gevent.pool import Group
-from gevent.queue import Queue, Empty
+# from gevent.queue import Queue, Empty
 
-from agentum.simulation import Simulation
+# from agentum.simulation import Simulation
 from agentum import protocol, settings
 
 logging.basicConfig()
@@ -19,7 +19,8 @@ log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
 
 step_event = AsyncResult()
-result_queue = Queue()
+# result_queue = Queue()
+
 
 def zrange(x):
     '''
@@ -58,12 +59,12 @@ class WorkerBase(object):
         protocol.active = True
 
         # dirty hack to test the concept:
-        protocol.send('sim name %s' % module.__name__, compress=False)
+        protocol.send('sim name %s' % module.__name__)
         protocol.send('sim space grid'.split() +
                              [self.sim.space.dimensions],
-                      compress=False)
-        protocol.send('cell heat 0', compress=False)
-        protocol.flush()
+                      )
+        protocol.send('cell heat 0')
+        protocol.flush(lambda x: ['preamble', x])
         # simulations.append(sim)
         # ...
 
@@ -86,12 +87,13 @@ class WorkerBase(object):
         for metaagent in self.sim.metaagents:
             metaagent.run(self.sim, cell)
 
+
 class WorkerSerial(WorkerBase):
 
     def step(self, flush=True):
         self.stepnum += 1
         log.debug("Step: %d" % self.stepnum)
-        protocol.send(("step", self.stepnum))
+        # protocol.send(("step", self.stepnum))
         sim = self.sim
 
         # Run agents
@@ -104,7 +106,7 @@ class WorkerSerial(WorkerBase):
         #     cell.__fire__()
         # Instead:
         if flush:
-            protocol.flush()
+            protocol.flush(lambda x: ['frame', self.stepnum, x])
 
 
 class WorkerGevent(WorkerBase):
@@ -127,7 +129,6 @@ class WorkerGevent(WorkerBase):
     def step_agent(self, agent):
         agent.run(self.sim)
         gevent.sleep(0)
-
 
     # slightly different semantics, due to the nature of metaagents
     def step_metaagent(self, cell):

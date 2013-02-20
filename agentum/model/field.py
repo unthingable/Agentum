@@ -1,4 +1,5 @@
-from random import random
+#from random import random
+
 
 class Field(object):
     def __init__(self, default=None, quant=None, scale=None):

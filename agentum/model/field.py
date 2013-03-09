@@ -5,7 +5,7 @@ class Field(object):
     def __init__(self, default=None, quant=None, scale=None):
         '''
         quant: quantization amount (makes sense for numeric attributes)
-        scale: scaling function (for tne moment unused)
+        scale: scaling function (for tne moment, unused)
         '''
         self.default = default
         self.quant = quant
@@ -35,14 +35,28 @@ class Field(object):
         else:
             return None
 
+    def description(self):
+        '''Return a self description (to send to the client)'''
+        out = dict(name=self.__class__.__name__,
+                   default=self.default,
+                   quant=self.quant,
+                   # scale=self.scale
+                   )
+        return out
+
 
 class State(Field):
-    def __init__(self, default=None, states={}, **kw):
+    # Could also have been called "fixed set"
+    def __init__(self, default=None, states=[], **kw):
         if len(states) < 2:
             raise Exception('A state field must have more than '
                             'one possible state')
         self.states = states
         Field.__init__(self, default=default, **kw)
+
+    def description(self):
+        out = Field.meta(self)
+        out['states'] = self.states
 
 
 class Integer(Field):
@@ -54,7 +68,7 @@ class Integer(Field):
 
 
 class Float(Field):
-    default = 0
+    default = 0.0
 
     # def quantize(self, *args, **kw):
     #     if random() < 0.1:

@@ -33,10 +33,12 @@ class ModelMeta(type):
                 fields[name] = attr
                 attrs[name] = attr.default
         attrs['_fields'] = fields
-        # import ipdb; ipdb.set_trace()
 
         return super(ModelMeta, meta).__new__(meta, class_name, bases, attrs)
 
+    def __call__(cls, *args, **kwds):
+        print cls._fields
+        return type.__call__(cls, *args, **kwds)
 
 id_seq = defaultdict(int)
 ids = {}

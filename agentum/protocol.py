@@ -30,6 +30,14 @@ from collections import defaultdict
 import json
 from operator import itemgetter
 
+# TDDO: move to git tag
+VERSION='0.1.1'
+
+
+def greet():
+    send(['agentum', {'protocol': VERSION}], compress=False)
+
+
 # This is downstream, let it do its own thing
 queue = None
 

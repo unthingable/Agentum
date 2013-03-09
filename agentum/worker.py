@@ -57,6 +57,7 @@ class WorkerBase(object):
         self.sim = module.simulation()
         setup(self.sim)
         protocol.active = True
+        protocol.greet()
 
         # dirty hack to test the concept:
         protocol.send('sim name %s' % module.__name__)

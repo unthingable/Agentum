@@ -12,17 +12,10 @@ log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
 
 
-# class config(Container):
-#     ignition = 0.3
-#     fill = 0.5
-#     dimensions = (100, 100)
-
-
 class ForestFire(Simulation):
     ignition = field.Float(0.3)
     fill = field.Float(0.5)
-    dimensions = field.Field((100, 100))
-
+    dimensions = field.Field((3, 3))
 
 simulation = ForestFire
 
@@ -35,10 +28,9 @@ class Forest(MetaAgent):
         if cell.state == 'burning':
             cell.state = 'empty'
         elif cell.state == 'occupied':
-            if any(x.state == 'burning' for x in neighbors):
+            if (any(x.state == 'burning' for x in neighbors)
+                or random() < simulation.ignition):
                 cell.state = 'burning'
-            if not cell.state == 'burning' and random() < simulation.ignition:
-                cell.state == 'burning'
         else:
             # Cell is empty
             if random() < simulation.fill:
@@ -46,21 +38,8 @@ class Forest(MetaAgent):
 
 
 class ForestCell(Cell):
-    states = ['empty', 'occupied', 'burning']
-    _state = 'empty'
-    state_num = 0
-
-    outputs = ['state_num']
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, new_state):
-        # log.debug("Cell %s: %s" % (self, new_state))
-        self._state = new_state
-        self.state_num = self.states.index(new_state)
+    state = field.State(default='empty',
+                        states=['empty', 'occupied', 'burning'])
 
     def __str__(self):
         return "%s" % str(self.point)

@@ -44,6 +44,14 @@ class Field(object):
                    )
         return out
 
+    # Experimental
+    def externalize(self, value):
+        'Value as sent to client'
+        return value
+
+    def internalize(self, value):
+        return self.from_string(value)
+
 
 class State(Field):
     # Could also have been called "fixed set"
@@ -61,6 +69,7 @@ class State(Field):
 
 class Integer(Field):
     default = 0
+    from_string = int
 
     @classmethod
     def serialize(cls, value):
@@ -69,8 +78,9 @@ class Integer(Field):
 
 class Float(Field):
     default = 0.0
+    from_string = float
 
-    # def quantize(self, *args, **kw):
-    #     if random() < 0.1:
-    #         import ipdb; ipdb.set_trace()
-    #     return Field.quantize(self, *args, **kw)
+
+class SpaceField(Field):
+    def externalize(self, value):
+        return value.dimensions

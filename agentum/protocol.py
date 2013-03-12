@@ -31,15 +31,26 @@ import json
 from operator import itemgetter
 
 # TDDO: move to git tag
-VERSION='0.1.1'
+VERSION = '0.1.2'
+
+known_models = set()
 
 
 def greet():
     send(['agentum', {'protocol': VERSION}], compress=False)
+    # Announce models
+    models = {}
+    for model in known_models:
+        models[model.__name__] = fdict = {}
+        for name, field in model._fields.iteritems():
+            fdict[name] = field.__class__.__name__
+    send(['models', models])
 
 
-# This is downstream, let it do its own thing
-queue = None
+# Push the object onto the client stream (websocket, etc.)
+# Override to do meaningful stuff
+def push(obj):
+    print repr(obj)
 
 # This is between us and downstream
 _buffer_tree = {}
@@ -49,20 +60,21 @@ active = True
 
 
 def send(obj, compress=True):
-    if queue:
+    if push:
         if isinstance(obj, (str, unicode)):
             obj = obj.split()
         if compress:
             _buffer(obj)
         else:
-            queue.put(json.dumps(obj))
+            push(json.dumps(obj))
 
 
 def flush(wrapper=None):
-    out = _buffer_tree
+    out = dict(_buffer_tree)
     if wrapper:
         out = wrapper(out)
-    queue.put(json.dumps(out))
+    if push:
+        push(json.dumps(out))
     _buffer_tree.clear()
 
 

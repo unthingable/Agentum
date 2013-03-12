@@ -20,9 +20,7 @@ log.setLevel(settings.LOGLEVEL)
 
 
 def memoize(f):
-    """
-    Warning: do not return iterators from memoized functions!
-    """
+    # Do not return iterators from memoized functions!
     cache = {}
 
     @wraps(f)
@@ -38,7 +36,7 @@ def memoize(f):
 # how about: a cell is responsible for communicating its state changes
 class Cell(Model):
     """
-    The basic element of our world. Must be hashable.
+    The basic unit of substrate. Must be hashable.
     """
     #__slots__ = "properties", "agents"
     stream_name = "cell"

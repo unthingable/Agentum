@@ -22,14 +22,7 @@ http://stackoverflow.com/questions/10656953/redis-gevent-poor-performance-what-a
 
 import logging
 from cmd import Cmd
-import gevent
-from gevent.event import AsyncResult
-from gevent.server import StreamServer
-from gevent.pool import Group
-from gevent.queue import Queue, Empty
-
-from agentum.simulation import Simulation
-from agentum import settings
+from agentum import protocol, settings
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -47,10 +40,37 @@ class WorkerCmd(Cmd):
         return True
 
     def do_EOF(self, s):
-        return True
+        pass
+        # return True
 
     def do_step(self, s):
         self.worker.step()
 
     def do_run(self, s=100):
         self.worker.run(int(s))
+
+    # Below: throw away and reengineer. Do not use as an example.
+
+    # Parameter feedback prototype
+    def do_sim(self, s):
+        field, _, value = s.partition(' ')
+        if not field:
+            protocol.push(self.worker.sim._fields)
+        elif hasattr(self.worker.sim, field):
+            if value:
+                setattr(self.worker.sim, field, value)
+                protocol.flush()
+            else:
+                protocol.push(getattr(self.worker.sim, field))
+
+    # # Prototype cell interaction
+    # def do_cell(self, s):
+    #     field, _, value = s.partition(' ')
+    #     if not field:
+    #         # Hackity hack. This wil
+    #         cell = self.worker.sim.space.cells()[0]
+    #         protocol.push(cell._fields)
+
+    # Frame render example (for demo only)
+    def do_render(self, param):
+        'Render one parameter of substrate'

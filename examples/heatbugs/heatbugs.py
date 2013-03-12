@@ -14,27 +14,24 @@ log.setLevel(settings.LOGLEVEL)
 
 
 class HeatBugs(Simulation):
-    dimensions = (100, 100)
-    numbugs = 30
+    dimensions = field.Field((100, 100))
+    numbugs = field.Integer(30)
 
-    heat = 1.5          # how much heat a bug emits per turn
-    t_max = 2           # how much can the bug tolerate
-    t_min = 0.4
+    heat = field.Float(1.5)          # how much heat a bug emits per turn
+    t_max = field.Integer(2)         # how much can the bug tolerate
+    t_min = field.Float(0.4)
 
-    transmission = 0.3  # how much heat is radiated to neighbors
-    sink = 0.1          # how much heat is lost into space
+    transmission = field.Float(0.3)  # how much heat is radiated to neighbors
+    sink = field.Float(0.1)          # how much heat is lost into space
 
     # runtime stuff
-    max_heat = 0    # maximum heat observed
-
-    inputs = 'heat t_max t_min transmission sink'.split()
+    max_heat = field.Float(0)    # maximum heat observed
 
 simulation = HeatBugs
 
 
 # A cell can be anything: a dict, a list, an object, etc..
 class BugCell(Cell):
-    __slots__ = 'bugs'
     heat = field.Float(default=0, quant=1)
 
     def __init__(self, point):
@@ -44,7 +41,7 @@ class BugCell(Cell):
 
 
 class Bug(Agent):
-    happiness = 0
+    happiness = field.Float(0)
     cell = field.Field()
 
     def run(self, simulation):

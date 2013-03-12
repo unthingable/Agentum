@@ -4,14 +4,12 @@ http://stackoverflow.com/questions/10656953/redis-gevent-poor-performance-what-a
 """
 
 import logging
-# from cmd import Cmd
 import gevent
 from gevent.event import AsyncResult
-#from gevent.server import StreamServer
 from gevent.pool import Group
-# from gevent.queue import Queue, Empty
+import imp
+import os
 
-# from agentum.simulation import Simulation
 from agentum import protocol, settings
 
 logging.basicConfig()
@@ -31,6 +29,18 @@ def zrange(x):
     while x != y:
         yield y
         y += 1
+
+
+def load_module(simmodule):
+    # options, args = parse_args()
+    # simmodule = args[0]
+    if os.path.isfile(simmodule):
+        dirname, module_name = os.path.split(simmodule)
+        module_name = module_name.replace('.py', '')
+        module = imp.load_source(module_name, simmodule)
+    else:
+        raise Exception("Not a file: %s" % simmodule)
+    return module
 
 
 class WorkerBase(object):
@@ -63,8 +73,7 @@ class WorkerBase(object):
         protocol.send('sim name %s' % module.__name__)
         protocol.send('sim space grid'.split() +
                              [self.sim.space.dimensions],
-                      )
-        protocol.send('cell heat 0')
+                     )
         protocol.flush(lambda x: ['preamble', x])
         # simulations.append(sim)
         # ...
@@ -136,6 +145,13 @@ class WorkerGevent(WorkerBase):
         for metaagent in self.sim.metaagents:
             metaagent.run(self.sim, cell)
             gevent.sleep(0)
+
+
+def load_sim(simmodule, worker=WorkerSerial):
+    module = load_module(simmodule)
+    w = worker()
+    w.load(module)
+    return w
 
 
 # class WorkerGevent2(WorkerBase):

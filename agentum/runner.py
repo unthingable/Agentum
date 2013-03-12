@@ -5,25 +5,23 @@
 import gevent
 from gevent import monkey; monkey.patch_all()
 from gevent.server import StreamServer
-import imp
-import sys
-import os
-import pkgutil
 import logging
 import argparse
 import signal
 import mimetypes
 
-from agentum.simulation import Simulation
 from agentum import worker as w
 from agentum import protocol
 from agentum.server import WorkerCmd
+from agentum.worker import load_sim
 
 from . import settings
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
+
+# TODO: extract fields from sim and add to arguments
 
 
 def arg_parser():
@@ -70,9 +68,9 @@ def run_main():
     parser = arg_parser()
     args = parser.parse_args()
     simmodule = args.module
-    module = load_module(simmodule)
+    # module = load_module(simmodule)
 
-    load_module_config(parser, module)
+    # load_module_config(parser, module)
 
     #worker = w.WorkerSerial()
     # if not options.gui:
@@ -84,13 +82,11 @@ def run_main():
             socket.send("Welcome to simulation server\n")
             worker = w.WorkerSerial()
 
-            class queue(object):
-                def put(self, obj):
-                    socket.send("%s\n" % obj)
-            protocol.queue = queue()
+            def push(obj):
+                socket.send("%s\n" % obj)
+            protocol.push = push
 
-            module = load_module(simmodule)
-            worker.load(module)
+            worker = load_sim(simmodule)
             fileobj = socket.makefile()
 
             cmd = WorkerCmd(worker, stdin=fileobj, stdout=fileobj)
@@ -110,19 +106,15 @@ def run_main():
         import os.path
         from gevent import pywsgi
         from geventwebsocket.handler import WebSocketHandler
-        from geventwebsocket import websocket
 
         def handle(ws):
             log.debug("Connected")
-            worker = w.WorkerSerial()
 
-            class queue(object):
-                def put(self, obj):
-                    ws.send(obj)
-            protocol.queue = queue()
+            def push(obj):
+                ws.send(obj)
+            protocol.push = push
 
-            module = load_module(simmodule)
-            worker.load(module)
+            worker = load_sim(simmodule)
             cmd = WorkerCmd(worker)
 
             while True:
@@ -163,15 +155,3 @@ def run_main():
         #     paste.urlparser.StaticURLParser(os.path.dirname(__file__)))
         print "Connect to http://localhost:9990/"
         ws_server.serve_forever()
-
-
-def load_module(simmodule):
-    # options, args = parse_args()
-    # simmodule = args[0]
-    if os.path.isfile(simmodule):
-        dirname, module_name = os.path.split(simmodule)
-        module_name = module_name.replace('.py', '')
-        module = imp.load_source(module_name, simmodule)
-    else:
-        raise Exception("Not a file: %s" % simmodule)
-    return module

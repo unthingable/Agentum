@@ -63,8 +63,9 @@ class State(Field):
         Field.__init__(self, default=default, **kw)
 
     def description(self):
-        out = Field.meta(self)
+        out = Field.description(self)
         out['states'] = self.states
+        return out
 
 
 class Integer(Field):

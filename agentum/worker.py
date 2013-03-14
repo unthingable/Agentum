@@ -70,6 +70,7 @@ class WorkerBase(object):
         protocol.greet()
 
         # dirty hack to test the concept:
+
         protocol.send('sim name %s' % module.__name__)
         protocol.send('sim space grid'.split() +
                              [self.sim.space.dimensions],

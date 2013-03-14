@@ -14,3 +14,6 @@ class Simulation(Model):
         # networks = {}
         self.agents = []
         self.metaagents = []
+
+    def id(self):
+        return None

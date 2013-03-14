@@ -63,15 +63,21 @@ class Model(object):
         # May have to optimize this later
         if protocol.active and (key in self._fields):
             field = self._fields[key]
-            qvalue = field.quantize(value, getattr(self, key))
+
+            # Fix this ugliness?
+            if hasattr(field, 'from_string'):
+                value = field.from_string(value)
+
+            original = getattr(self, key)
+            qvalue = field.quantize(value, original)
             # Tell the world the value has changed
             if qvalue:
                 # Again, experimental:
-                qvalue = field.externalize(value)
+                qvalue = field.externalize(qvalue)
 
                 output = [self.stream_name, key, self.id(), qvalue]
                 # o = ' '.join(output)
-                log.debug(output)
+                log.debug('%r <- %r' % (qvalue, original))
                 protocol.send(output)
         object.__setattr__(self, key, value)
 
@@ -79,4 +85,5 @@ class Model(object):
         keys = keys or self._fields.keys()
         for key in keys:
             protocol.send([self.stream_name, key, self.id(),
-                           getattr(self, key)])
+                           original])
+

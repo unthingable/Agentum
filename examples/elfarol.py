@@ -16,7 +16,7 @@ class ElFarol(Simulation):
 
     current_attendance = 0
     # This field gets tallied every night
-    attendance = field.Integer()
+    attendance = field.Integer(0)
     history_size = field.Integer(5)
 
     # It's closing time

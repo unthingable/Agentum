@@ -29,7 +29,7 @@ class Forest(MetaAgent):
             cell.state = 'empty'
         elif cell.state == 'occupied':
             if (any(x.state == 'burning' for x in neighbors)
-                or random() < simulation.ignition):
+                    or random() < simulation.ignition):
                 cell.state = 'burning'
         else:
             # Cell is empty

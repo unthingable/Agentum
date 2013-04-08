@@ -55,7 +55,7 @@ class Field(object):
 
 class State(Field):
     # Could also have been called "fixed set"
-    def __init__(self, default=None, states=[], **kw):
+    def __init__(self, states=[], default=None, **kw):
         if len(states) < 2:
             raise Exception('A state field must have more than '
                             'one possible state')
@@ -85,3 +85,8 @@ class Float(Field):
 class SpaceField(Field):
     def externalize(self, value):
         return value.dimensions
+
+
+class FuncField(Field):
+    def externalize(self, value):
+        return value.__name__

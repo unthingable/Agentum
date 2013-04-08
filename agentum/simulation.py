@@ -10,10 +10,16 @@ class Simulation(Model):
 #    space = field.SpaceField()
 
     def __init__(self):
-        # self.space = None    # A single "physical" space for now.
+        self.space = None    # A single "physical" space for now.
         # networks = {}
         self.agents = []
         self.metaagents = []
 
     def id(self):
         return None
+
+    def before_step(self, stepnum):
+        pass
+
+    def after_step(self, stepnum):
+        pass

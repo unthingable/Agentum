@@ -31,6 +31,11 @@ def zrange(x):
         y += 1
 
 
+def fpass(*x):
+    'Dummy function'
+    pass
+
+
 def load_module(simmodule):
     # options, args = parse_args()
     # simmodule = args[0]
@@ -58,23 +63,25 @@ class WorkerBase(object):
 
     def load(self, module):
         self.module = module
-        setup = getattr(module, 'setup', None)
-        if not setup:
-            raise Exception("No setup() found in module %s" % module.__name__)
+        self.sim = module.simulation()
+
+        # Call the setup() methods, if any
+        getattr(module, 'setup', fpass)(self.sim)
+        getattr(self.sim, 'setup', fpass)()
+
         log.info("Loading simulation %s" % module.__name__)
 
         # protocol.active = False
-        self.sim = module.simulation()
-        setup(self.sim)
         protocol.active = True
         protocol.greet()
 
         # dirty hack to test the concept:
 
         protocol.send('sim name %s' % module.__name__)
-        protocol.send('sim space grid'.split() +
-                             [self.sim.space.dimensions],
-                     )
+        if self.sim.space:
+            protocol.send('sim space grid'.split() +
+                          [self.sim.space.dimensions],
+                          )
         protocol.flush(lambda x: ['preamble', x])
         # simulations.append(sim)
         # ...
@@ -107,19 +114,23 @@ class WorkerSerial(WorkerBase):
         # protocol.send(("step", self.stepnum))
         sim = self.sim
 
+        sim.before_step(self.stepnum)
         # Run agents
         map(self.step_agent, sim.agents)
         # Run metaagents
         # protocol.active = False
-        map(self.step_metaagent, sim.space.cells())
+        if sim.space:
+            map(self.step_metaagent, sim.space.cells())
         # protocol.active = True
         # for cell in self.sim.space.cells():
         #     cell.__fire__()
         # Instead:
         if flush:
             protocol.flush(lambda x: ['frame', self.stepnum, x])
+        sim.after_step(self.stepnum)
 
 
+# Update before using again...
 class WorkerGevent(WorkerBase):
     group = None
 

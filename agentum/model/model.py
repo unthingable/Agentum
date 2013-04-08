@@ -71,7 +71,7 @@ class Model(object):
             original = getattr(self, key)
             qvalue = field.quantize(value, original)
             # Tell the world the value has changed
-            if qvalue:
+            if qvalue != None:
                 # Again, experimental:
                 qvalue = field.externalize(qvalue)
 
@@ -86,4 +86,3 @@ class Model(object):
         for key in keys:
             protocol.send([self.stream_name, key, self.id(),
                            original])
-

@@ -125,9 +125,9 @@ class WorkerSerial(WorkerBase):
         # for cell in self.sim.space.cells():
         #     cell.__fire__()
         # Instead:
+        sim.after_step(self.stepnum)
         if flush:
             protocol.flush(lambda x: ['frame', self.stepnum, x])
-        sim.after_step(self.stepnum)
 
 
 # Update before using again...

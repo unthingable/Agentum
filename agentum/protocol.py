@@ -43,7 +43,7 @@ def greet():
     for model in known_models:
         models[model.__name__] = fdict = {}
         for name, field in model._fields.iteritems():
-            fdict[name] = field.description() # field.__class__.__name__
+            fdict[name] = field.description()  # field.__class__.__name__
     send(['models', models])
 
 

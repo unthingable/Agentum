@@ -16,6 +16,7 @@ class Simulation(Model):
         self.metaagents = []
 
     def id(self):
+        # Singleton
         return None
 
     def before_step(self, stepnum):

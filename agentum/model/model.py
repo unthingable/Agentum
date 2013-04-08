@@ -71,11 +71,12 @@ class Model(object):
             original = getattr(self, key)
             qvalue = field.quantize(value, original)
             # Tell the world the value has changed
-            if qvalue != None:
+            if qvalue is not None:
                 # Again, experimental:
                 qvalue = field.externalize(qvalue)
 
-                output = [self.stream_name, key, self.id(), qvalue]
+                output = filter(lambda x: x is not None,
+                                (self.stream_name, key, self.id(), qvalue))
                 # o = ' '.join(output)
                 log.debug('%r <- %r' % (qvalue, original))
                 protocol.send(output)

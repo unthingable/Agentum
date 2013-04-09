@@ -78,6 +78,8 @@ class WorkerBase(object):
         # dirty hack to test the concept:
 
         protocol.send('sim name %s' % module.__name__)
+        if self.sim.__doc__:
+            protocol.send(['sim', 'doc', self.sim.__doc__])
         if self.sim.space:
             protocol.send('sim space grid'.split() +
                           [self.sim.space.dimensions],

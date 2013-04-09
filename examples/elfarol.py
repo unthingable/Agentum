@@ -11,6 +11,10 @@ def coinflip(history):
 
 
 class ElFarol(Simulation):
+    '''
+    Good docs are good!
+    '''
+
     total_people = 100
     history = deque()
 
@@ -23,14 +27,14 @@ class ElFarol(Simulation):
     def after_step(self, stepnum):
         # update the Field to propagate attendance
         self.attendance = self.current_attendance
+
         self.history.append(self.attendance)
         while len(self.history) > self.history_size:
             self.history.popleft()
         # Close the bar
         self.current_attendance = 0
 
-    # Here we try a new convention: putting setup() directly into
-    # Simulation.
+    # Placing setup() in simulation class works too
     def setup(self):
         # Write some history
         self.history = deque([30] * self.history_size)

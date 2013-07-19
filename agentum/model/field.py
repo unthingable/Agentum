@@ -54,7 +54,7 @@ class Field(object):
 
 
 class State(Field):
-    # Could also have been called "fixed set"
+    # Could also have been called "fixed set" or "enum"
     def __init__(self, states=[], default=None, **kw):
         if len(states) < 2:
             raise Exception('A state field must have more than '
@@ -68,18 +68,18 @@ class State(Field):
         return out
 
 
-class Integer(Field):
+class Float(Field):
+    default = 0.0
+    from_string = float
+
+
+class Integer(Float):
     default = 0
     from_string = int
 
     @classmethod
     def serialize(cls, value):
         return str(int(value))
-
-
-class Float(Field):
-    default = 0.0
-    from_string = float
 
 
 class SpaceField(Field):

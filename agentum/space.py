@@ -44,8 +44,7 @@ class Cell(Model):
 
     def __init__(self, point, properties=None):
         self.agents = set()
-        self.properties = properties or {}
-        # import ipdb; ipdb.set_trace()
+        # self.properties = properties or {}
         self.point = point
 
     # def id(self):
@@ -53,6 +52,10 @@ class Cell(Model):
 
     def __str__(self):
         return self.id()
+
+    @property
+    def empty(self):
+        return len(self.agents) == 0
 
 
 class SparseSpace(object):

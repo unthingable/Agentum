@@ -34,10 +34,10 @@ simulation = HeatBugs
 class BugCell(Cell):
     heat = field.Float(default=0, quant=1)
 
-    def __init__(self, point):
-        # more elegant way to do this?
-        Cell.__init__(self, point)
-        self.bugs = set()
+    # def __init__(self, point):
+    #     # more elegant way to do this?
+    #     Cell.__init__(self, point)
+    #     self.bugs = set()
 
 
 class Bug(Agent):
@@ -61,7 +61,7 @@ class Bug(Agent):
             for new_cell in sorted(neighbors,
                                    key=lambda (v): v.heat,
                                    reverse=too_cold):
-                if (not new_cell.bugs and
+                if (not new_cell.empty and
                     # Is the new cell any better?
                     ((too_hot and new_cell.heat < cell.heat) or
                      (too_cold and new_cell.heat > cell.heat))):
@@ -98,7 +98,7 @@ def setup(simulation):
     # ... for now the hard way.
     # Must add them in both the simulation and the space...
     cell_iter = cycle(simulation.space.cells(CellSpace.tr_random))
-    unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
+    unoccupied_cell_iter = (x for x in cell_iter if x.empty)
 
     # Randomly scatter the bugs around the space
     simulation.metaagents.append(Dissipator())

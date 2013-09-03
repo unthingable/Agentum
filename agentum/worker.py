@@ -102,11 +102,6 @@ class WorkerBase(object):
     def step_agent(self, agent):
         agent.run(self.sim)
 
-    # slightly different semantics, due to the nature of metaagents
-    def step_metaagent(self, cell):
-        for metaagent in self.sim.metaagents:
-            metaagent.run(self.sim, cell)
-
 
 class WorkerSerial(WorkerBase):
 
@@ -122,7 +117,8 @@ class WorkerSerial(WorkerBase):
         # Run metaagents
         # protocol.active = False
         if sim.space:
-            map(self.step_metaagent, sim.space.cells())
+            for cell in sim.space.cells():
+                cell.run(self.sim)
         # protocol.active = True
         # for cell in self.sim.space.cells():
         #     cell.__fire__()

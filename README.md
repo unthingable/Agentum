@@ -181,11 +181,11 @@ In a `GridSpace` cells are mapped to _points_ (implemented as simple coordinate 
 
 As there is a finite number of cells we have two ways of addressing them: by coordinate tuples or by ordinal numbers (after having numbered them).
 
-## Agents and metaagents
+## Agents and forces
 
 An _agent_ is the operating unit in our simulations. Agents are entities capable of making decisions. An example would be a potential patron in El Pharol or a bug in the "heatbugs" model.
 
-A _metaagent_ is a force of nature (or a singular entity) that is optionally omnipresent in the substrate. That is, a metaagent can exist in every cell or only in some, and we evaluate a metaagent on all cells at once. An example of a metaagent is a force that dissipates heat in the "heatbugs" model, after the bugs have finished their moves and emitted their heat portions into their immediate cells.
+In addition to agent, cells have their own `run()` method -- use it to represent a force of nature (or a singular entity) that is optionally omnipresent in the substrate. For example, a force that dissipates heat in the "heatbugs" model, after the bugs have finished their moves and emitted their heat portions into their immediate cells.
 
 ## Models and Fields
 
@@ -195,7 +195,7 @@ In its simplest form there are very little restrictions on agents and models, as
 
 With any luck, however, soon will come a time when you want to interact with the running simulation and visualize what is happening. Fortunately, communicating with a client is easy: have your agents subclass Model and create class variables as instances of Field (a pattern typically used in ORMs such as Django).
 
-Agents, metaagents, cells and simulations themselves can be Models.
+Agents, cells and simulations themselves can be Models.
 
 ### Field types
 

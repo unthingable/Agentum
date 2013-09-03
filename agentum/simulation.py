@@ -13,7 +13,6 @@ class Simulation(Model):
         self.space = None    # A single "physical" space for now.
         # networks = {}
         self.agents = []
-        self.metaagents = []
 
     def id(self):
         # Singleton

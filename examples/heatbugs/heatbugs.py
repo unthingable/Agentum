@@ -3,7 +3,7 @@ from random import random
 import logging
 
 from agentum.simulation import Simulation
-from agentum.agent import Agent, MetaAgent
+from agentum.agent import Agent
 from agentum.model import field
 from agentum.space import Cell, GridSpace as CellSpace
 from agentum import settings
@@ -39,6 +39,16 @@ class BugCell(Cell):
         Cell.__init__(self, point)
         self.bugs = set()
 
+    def run(self, simulation):
+        # dissipate heat
+        emission_loss = self.heat * simulation.transmission
+        neighbors = simulation.space.neighbors(self, r=1)
+        for n in neighbors:
+            # Only colder cells (positive delta) will absorb the heat.
+            # Sum of transmissions cannot be greater that the total emission.
+            n.heat += emission_loss / len(neighbors)
+        self.heat -= emission_loss + (self.heat * simulation.sink)
+
 
 class Bug(Agent):
     happiness = field.Float(0)
@@ -59,7 +69,7 @@ class Bug(Agent):
             # Find a cell to migrate to.
             neighbors = simulation.space.neighbors(cell)
             for new_cell in sorted(neighbors,
-                                   key=lambda (v): v.heat,
+                                   key=lambda v: v.heat,
                                    reverse=too_cold):
                 if (not new_cell.bugs and
                     # Is the new cell any better?
@@ -80,17 +90,6 @@ class Bug(Agent):
         simulation.space.move(self, new_cell)
 
 
-class Dissipator(MetaAgent):
-    def run(self, simulation, cell):
-        emission_loss = cell.heat * simulation.transmission
-        neighbors = simulation.space.neighbors(cell, r=1)
-        for n in neighbors:
-            # Only colder cells (positive delta) will absorb the heat.
-            # Sum of transmissions cannot be greater that the total emission.
-            n.heat += emission_loss / len(neighbors)
-        cell.heat -= emission_loss + (cell.heat * simulation.sink)
-
-
 def setup(simulation):
     # Create space
     simulation.space = CellSpace(BugCell, dimensions=simulation.dimensions)
@@ -101,7 +100,6 @@ def setup(simulation):
     unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
 
     # Randomly scatter the bugs around the space
-    simulation.metaagents.append(Dissipator())
     for n, cell in izip(range(simulation.numbugs), unoccupied_cell_iter):
         bug = Bug()
         log.debug("Adding agent %r" % bug)

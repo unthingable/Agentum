@@ -34,7 +34,10 @@ class WorkerCmd(Cmd):
     def __init__(self, worker, *args, **kwargs):
         Cmd.__init__(self, *args, **kwargs)
         self.worker = worker
-        self.prompt = '%s> ' % worker.module.__name__
+        self.prompt = '%s> ' % worker.simclass.__name__
+
+    def do_init(self, s):
+        self.worker.sim_init()
 
     def do_quit(self, s):
         return True

@@ -11,6 +11,7 @@ import imp
 import os
 
 from agentum import protocol, settings
+from agentum.simulation import Simulation
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ def fpass(*x):
     pass
 
 
-def load_module(simmodule):
+def find_sim(simmodule):
     # options, args = parse_args()
     # simmodule = args[0]
     if os.path.isfile(simmodule):
@@ -45,7 +46,12 @@ def load_module(simmodule):
         module = imp.load_source(module_name, simmodule)
     else:
         raise Exception("Not a file: %s" % simmodule)
-    return module
+    for attr in dir(module):
+        attr = getattr(module, attr)
+        if isinstance(attr, type):
+            if issubclass(attr, Simulation):
+                return attr
+    raise Exception("Simulation not found in module %s", simmodule)
 
 
 class WorkerBase(object):
@@ -56,20 +62,16 @@ class WorkerBase(object):
 
     # For now, a single simulation, no clients
     sim = None
+    simclass = None
     module = None
 
     _num_cells = 0
     stepnum = 0
 
-    def load(self, module):
-        self.module = module
-        self.sim = module.simulation()
+    def setsim(self, simclass):
+        self.simclass = simclass
 
-        # Call the setup() methods, if any
-        getattr(module, 'setup', fpass)(self.sim)
-        getattr(self.sim, 'setup', fpass)()
-
-        log.info("Loading simulation %s" % module.__name__)
+        log.info("Loading simulation %s" % simclass.__name__)
 
         # protocol.active = False
         protocol.active = True
@@ -77,21 +79,30 @@ class WorkerBase(object):
 
         # dirty hack to test the concept:
 
-        protocol.send('sim name %s' % module.__name__)
-        if self.sim.__doc__:
-            protocol.send(['sim', 'doc', self.sim.__doc__])
-        if self.sim.space:
-            protocol.send('sim space grid'.split() +
-                          [self.sim.space.dimensions],
-                          )
+        protocol.send('sim name %s' % simclass.__name__)
+        if simclass.__doc__:
+            protocol.send(['sim', 'doc', simclass.__doc__])
         protocol.flush(lambda x: ['preamble', x])
         # simulations.append(sim)
         # ...
+
+    def sim_init(self, force=False):
+        if force or not self.sim:
+            # Call the setup() methods, if any
+            self.sim = self.simclass()
+            self.sim.setup()
+
+            if self.sim.space:
+                protocol.send('sim space grid'.split() +
+                              [self.sim.space.dimensions],
+                              )
+            protocol.flush(lambda x: ['preamble', x])
 
     def run(self, steps=100):
         """
         Run the simulation for N steps. Set to 0 to run endlessly.
         """
+        self.sim_init()
         log.info("Running simulation %s for %d steps..." %
                  (self.module.__name__, steps))
         for n in zrange(steps):
@@ -106,6 +117,8 @@ class WorkerBase(object):
 class WorkerSerial(WorkerBase):
 
     def step(self, flush=True):
+        self.sim_init()
+
         self.stepnum += 1
         log.debug("Step: %d" % self.stepnum)
         # protocol.send(("step", self.stepnum))
@@ -158,9 +171,9 @@ class WorkerGevent(WorkerBase):
 
 
 def load_sim(simmodule, worker=WorkerSerial):
-    module = load_module(simmodule)
+    sim = find_sim(simmodule)
     w = worker()
-    w.load(module)
+    w.setsim(sim)
     return w
 
 

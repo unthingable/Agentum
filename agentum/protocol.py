@@ -31,7 +31,7 @@ import json
 from operator import itemgetter
 
 # TDDO: move to git tag
-VERSION = '0.1.3'
+VERSION = '0.2.0'
 
 known_models = set()
 

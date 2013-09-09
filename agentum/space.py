@@ -172,7 +172,7 @@ class GridSpace(CellSpace):
         """
         dimensions: list of dimensions
         names:      optional list of dimension names
-        cell_fn:    cell creator function (or class)
+        cell_fn:    cell creator function (or class), takes coord tuple
 
         Ex. (100,100,20) for a 3-dimensional 100x100x20 grid.
         """

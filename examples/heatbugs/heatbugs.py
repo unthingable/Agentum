@@ -39,7 +39,7 @@ class BugCell(Cell):
         Cell.__init__(self, point)
         self.bugs = set()
 
-    def run(self, simulation):
+    def dissipate(self, simulation):
         # dissipate heat
         emission_loss = self.heat * simulation.transmission
         neighbors = simulation.space.neighbors(self, r=1)
@@ -54,11 +54,15 @@ class Bug(Agent):
     happiness = field.Float(0)
     cell = field.Field()
 
-    def run(self, simulation):
+    def emit_heat(self, simulation):
         cell = simulation.space.find(self)
         cell.heat += simulation.heat
         if cell.heat > simulation.max_heat:
             simulation.max_heat = cell.heat
+
+    def decide(self, simulation):
+        self.new_cell = None
+        cell = simulation.space.find(self)
 
         too_hot = cell.heat > simulation.t_max
         too_cold = cell.heat < simulation.t_min
@@ -76,7 +80,8 @@ class Bug(Agent):
                     ((too_hot and new_cell.heat < cell.heat) or
                      (too_cold and new_cell.heat > cell.heat))):
                     # Yay!
-                    self.move(simulation, new_cell)
+                    self.new_cell = new_cell
+                    # self.move(simulation, new_cell)
                     break
             else:
                 log.debug("Bug %s could not move" % self)
@@ -86,8 +91,9 @@ class Bug(Agent):
             self.happiness += 1
 
     def move(self, simulation, new_cell):
-        self.cell = new_cell.id()
-        simulation.space.move(self, new_cell)
+        if self.new_cell:
+            self.cell = new_cell.id()
+            simulation.space.move(self, new_cell)
 
 
 def setup(simulation):
@@ -102,6 +108,12 @@ def setup(simulation):
     # Randomly scatter the bugs around the space
     for n, cell in izip(range(simulation.numbugs), unoccupied_cell_iter):
         bug = Bug()
+        bug.sim = simulation
         log.debug("Adding agent %r" % bug)
         simulation.space.add_agent(bug, cell)
         simulation.agents.append(bug)
+
+    simulation.steps = (Bug.emit_heat,
+                        BugCell.dissipate,
+                        Bug.decide,
+                        Bug.act)

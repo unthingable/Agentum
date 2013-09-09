@@ -18,18 +18,18 @@ class ForestCell(Cell):
     def __str__(self):
         return "%s" % str(self.point)
 
-    def step(self, simulation):
-        neighbors = simulation.space.neighbors(self, r=1)
+    def step(self):
+        neighbors = self.sim.space.neighbors(self, r=1)
 
         if self.state == 'burning':
             self.state = 'empty'
         elif self.state == 'occupied':
             if (any(x.state == 'burning' for x in neighbors)
-                    or random() < simulation.ignition):
+                    or random() < self.sim.ignition):
                 self.state = 'burning'
         else:
             # Cell is empty
-            if random() < simulation.fill:
+            if random() < self.sim.fill:
                 self.state = 'occupied'
 
 
@@ -39,4 +39,10 @@ class ForestFire(Simulation):
     dimensions = field.Field((3, 3))
 
     def setup(self):
-        self.space = CellSpace(ForestCell, dimensions=self.dimensions)
+        def cell_fn(coordinates):
+            cell = ForestCell(coordinates)
+            cell.sim = self
+            return cell
+
+        self.space = CellSpace(cell_fn, dimensions=self.dimensions)
+        self.steps = (ForestCell.step,)

@@ -3,11 +3,13 @@ NOTE: gevent is slower (a lot!) when running on a VM:
 http://stackoverflow.com/questions/10656953/redis-gevent-poor-performance-what-am-i-doing-wrong
 """
 
+from collections import defaultdict
 import logging
 import gevent
 from gevent.event import AsyncResult
 from gevent.pool import Group
 import imp
+import inspect
 import os
 
 from agentum import protocol, settings
@@ -67,6 +69,7 @@ class WorkerBase(object):
 
     _num_cells = 0
     stepnum = 0
+    steps = None
 
     def setsim(self, simclass):
         self.simclass = simclass
@@ -92,7 +95,24 @@ class WorkerBase(object):
             self.sim = self.simclass()
             self.sim.setup()
 
+            # initialize steps
+            if not self.sim.steps:
+                raise Exception("Must specify simulation steps")
+            else:
+                for step in self.sim.steps:
+                    # Limit the steps (for now)
+                    if inspect.ismethod(step) and step.im_self is None:
+                        continue
+                    raise Exception("Only unbounded methods can be steps")
+
+            self.steppables = defaultdict(set)
+            for agent in self.sim.agents:
+                self.steppables[agent.__class__].add(agent)
+
             if self.sim.space:
+                for cell in self.sim.space.cells():
+                    self.steppables[cell.__class__].add(cell)
+
                 protocol.send('sim space grid'.split() +
                               [self.sim.space.dimensions],
                               )
@@ -110,8 +130,8 @@ class WorkerBase(object):
             self.step(flush=False)
         protocol.flush(lambda x: ['frame', self.stepnum, x])
 
-    def step_agent(self, agent):
-        agent.run(self.sim)
+    # def step_agent(self, agent):
+    #     agent.run(self.sim)
 
 
 class WorkerSerial(WorkerBase):
@@ -125,17 +145,13 @@ class WorkerSerial(WorkerBase):
         sim = self.sim
 
         sim.before_step(self.stepnum)
-        # Run agents
-        map(self.step_agent, sim.agents)
-        # Run metaagents
-        # protocol.active = False
-        if sim.space:
-            for cell in sim.space.cells():
-                cell.run(self.sim)
-        # protocol.active = True
-        # for cell in self.sim.space.cells():
-        #     cell.__fire__()
-        # Instead:
+
+        for step_method in sim.steps:
+            # step is guaranteed to be an unbound method
+            # by a check in sim_imit
+            for steppable in self.steppables[step_method.im_class]:
+                step_method(steppable)
+
         sim.after_step(self.stepnum)
         if flush:
             protocol.flush(lambda x: ['frame', self.stepnum, x])

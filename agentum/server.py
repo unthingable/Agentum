@@ -37,7 +37,7 @@ class WorkerCmd(Cmd):
         self.prompt = '%s> ' % worker.simclass.__name__
 
     def do_init(self, s):
-        self.worker.sim_init()
+        self.worker.sim_init(force=True)
 
     def do_quit(self, s):
         return True

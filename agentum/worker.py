@@ -64,6 +64,7 @@ class WorkerBase(object):
 
     # For now, a single simulation, no clients
     sim = None
+    is_setup = False
     simclass = None
     module = None
 
@@ -73,6 +74,7 @@ class WorkerBase(object):
 
     def setsim(self, simclass):
         self.simclass = simclass
+        self.sim = simclass()
 
         log.info("Loading simulation %s" % simclass.__name__)
 
@@ -90,10 +92,10 @@ class WorkerBase(object):
         # ...
 
     def sim_init(self, force=False):
-        if force or not self.sim:
+        if force or not self.is_setup:
             # Call the setup() methods, if any
-            self.sim = self.simclass()
             self.sim.setup()
+            self.is_setup = True
 
             # initialize steps
             if not self.sim.steps:
@@ -150,7 +152,7 @@ class WorkerSerial(WorkerBase):
             # step is guaranteed to be an unbound method
             # by a check in sim_imit
             for steppable in self.steppables[step_method.im_class]:
-                step_method(steppable)
+                step_method(steppable, sim)
 
         sim.after_step(self.stepnum)
         if flush:

@@ -27,7 +27,27 @@ class HeatBugs(Simulation):
     # runtime stuff
     max_heat = field.Float(0)    # maximum heat observed
 
-simulation = HeatBugs
+    def setup(self):
+        # Create space
+        self.space = CellSpace(BugCell, dimensions=self.dimensions)
+        # Create agents
+        # ... for now the hard way.
+        # Must add them in both the self and the space...
+        cell_iter = cycle(self.space.cells(CellSpace.tr_random))
+        unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
+
+        # Randomly scatter the bugs around the space
+        for n, cell in izip(range(self.numbugs), unoccupied_cell_iter):
+            bug = Bug()
+            bug.sim = self
+            log.debug("Adding agent %r" % bug)
+            self.space.add_agent(bug, cell)
+            self.agents.append(bug)
+
+        self.steps = (Bug.emit_heat,
+                      BugCell.dissipate,
+                      Bug.decide_and_move,
+                      )
 
 
 # A cell can be anything: a dict, a list, an object, etc..
@@ -53,6 +73,11 @@ class BugCell(Cell):
 class Bug(Agent):
     happiness = field.Float(0)
     cell = field.Field()
+
+    def decide_and_move(self, simulation):
+        # atomic move
+        self.decide(simulation)
+        self.move(simulation)
 
     def emit_heat(self, simulation):
         cell = simulation.space.find(self)
@@ -90,30 +115,7 @@ class Bug(Agent):
             # A bug that does not move is a happier bug.
             self.happiness += 1
 
-    def move(self, simulation, new_cell):
+    def move(self, simulation):
         if self.new_cell:
-            self.cell = new_cell.id()
-            simulation.space.move(self, new_cell)
-
-
-def setup(simulation):
-    # Create space
-    simulation.space = CellSpace(BugCell, dimensions=simulation.dimensions)
-    # Create agents
-    # ... for now the hard way.
-    # Must add them in both the simulation and the space...
-    cell_iter = cycle(simulation.space.cells(CellSpace.tr_random))
-    unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
-
-    # Randomly scatter the bugs around the space
-    for n, cell in izip(range(simulation.numbugs), unoccupied_cell_iter):
-        bug = Bug()
-        bug.sim = simulation
-        log.debug("Adding agent %r" % bug)
-        simulation.space.add_agent(bug, cell)
-        simulation.agents.append(bug)
-
-    simulation.steps = (Bug.emit_heat,
-                        BugCell.dissipate,
-                        Bug.decide,
-                        Bug.act)
+            self.cell = self.new_cell.id()
+            simulation.space.move(self, self.new_cell)

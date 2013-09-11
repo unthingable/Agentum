@@ -80,7 +80,6 @@ def run_main():
         def handle(socket, address):
             log.debug("Connected: %s" % str(address))
             socket.send("Welcome to simulation server\n")
-            worker = w.WorkerSerial()
 
             def push(obj):
                 socket.send("%s\n" % repr(obj))

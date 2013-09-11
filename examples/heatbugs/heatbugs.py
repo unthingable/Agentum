@@ -14,7 +14,7 @@ log.setLevel(settings.LOGLEVEL)
 
 
 class HeatBugs(Simulation):
-    dimensions = field.List(field.Integer(100, 100))
+    dimensions = field.List(field.Integer, (100, 100))
     numbugs = field.Integer(30)
 
     heat = field.Float(1.5)          # how much heat a bug emits per turn
@@ -30,6 +30,9 @@ class HeatBugs(Simulation):
     def setup(self):
         # Create space
         self.space = CellSpace(BugCell, dimensions=self.dimensions)
+        # quick and dirty: make the sim resettable:
+        self.agents = []
+
         # Create agents
         # ... for now the hard way.
         # Must add them in both the self and the space...

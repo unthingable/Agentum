@@ -72,7 +72,7 @@ class WorkerBase(object):
     stepnum = 0
     steps = None
 
-    def setsim(self, simclass):
+    def __init__(self, simclass):
         self.simclass = simclass
         self.sim = simclass()
 
@@ -93,7 +93,6 @@ class WorkerBase(object):
 
     def sim_init(self, force=False):
         if force or not self.is_setup:
-            # Call the setup() methods, if any
             self.sim.setup()
             self.is_setup = True
 
@@ -190,9 +189,7 @@ class WorkerGevent(WorkerBase):
 
 def load_sim(simmodule, worker=WorkerSerial):
     sim = find_sim(simmodule)
-    w = worker()
-    w.setsim(sim)
-    return w
+    return worker(sim)
 
 
 # class WorkerGevent2(WorkerBase):

@@ -14,7 +14,7 @@ log.setLevel(settings.LOGLEVEL)
 
 
 class HeatBugs(Simulation):
-    dimensions = field.Field((100, 100))
+    dimensions = field.List(field.Integer(100, 100))
     numbugs = field.Integer(30)
 
     heat = field.Float(1.5)          # how much heat a bug emits per turn

@@ -82,6 +82,14 @@ class Float(Field):
     from_string = float
 
 
+class List(Field):
+    default = []
+
+    def __init__(self, field, *args, **kw):
+        Field.__init__(self, *args, **kw)
+        self.from_string = lambda x: map(field.from_string, x.split())
+
+
 class SpaceField(Field):
     def externalize(self, value):
         return value.dimensions

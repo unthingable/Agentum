@@ -36,7 +36,7 @@ class ForestCell(Cell):
 class ForestFire(Simulation):
     ignition = field.Float(0.3)
     fill = field.Float(0.5)
-    dimensions = field.Field((3, 3))
+    dimensions = field.List(field.Integer, (3, 3))
 
     def setup(self):
         self.space = CellSpace(ForestCell, dimensions=self.dimensions)

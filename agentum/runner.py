@@ -83,7 +83,7 @@ def run_main():
             worker = w.WorkerSerial()
 
             def push(obj):
-                socket.send("%s\n" % obj)
+                socket.send("%s\n" % repr(obj))
             protocol.push = push
 
             worker = load_sim(simmodule)

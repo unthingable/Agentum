@@ -5,9 +5,9 @@ http://stackoverflow.com/questions/10656953/redis-gevent-poor-performance-what-a
 
 from collections import defaultdict
 import logging
-import gevent
-from gevent.event import AsyncResult
-from gevent.pool import Group
+# import gevent
+# from gevent.event import AsyncResult
+# from gevent.pool import Group
 import imp
 import inspect
 import os
@@ -19,7 +19,7 @@ logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
 
-step_event = AsyncResult()
+# step_event = AsyncResult()
 # result_queue = Queue()
 
 
@@ -159,33 +159,33 @@ class WorkerSerial(WorkerBase):
             protocol.flush(lambda x: ['frame', self.stepnum, x])
 
 
-# Update before using again...
-class WorkerGevent(WorkerBase):
-    group = None
+# # Update before using again...
+# class WorkerGevent(WorkerBase):
+#     group = None
 
-    def step(self):
-        self.stepnum += 1
-        log.debug("Step: %d" % self.stepnum)
-        sim = self.sim
+#     def step(self):
+#         self.stepnum += 1
+#         log.debug("Step: %d" % self.stepnum)
+#         sim = self.sim
 
-        if not self.group:
-            self.group = Group()
+#         if not self.group:
+#             self.group = Group()
 
-        # Run agents
-        self.group.imap(self.step_agent, sim.agents)
-        # Run metaagents
-        self.group.imap(self.step_metaagent, sim.space.cells())
-        # This is a good place to emit state updates and such
+#         # Run agents
+#         self.group.imap(self.step_agent, sim.agents)
+#         # Run metaagents
+#         self.group.imap(self.step_metaagent, sim.space.cells())
+#         # This is a good place to emit state updates and such
 
-    def step_agent(self, agent):
-        agent.run(self.sim)
-        gevent.sleep(0)
+#     def step_agent(self, agent):
+#         agent.run(self.sim)
+#         gevent.sleep(0)
 
-    # slightly different semantics, due to the nature of metaagents
-    def step_metaagent(self, cell):
-        for metaagent in self.sim.metaagents:
-            metaagent.run(self.sim, cell)
-            gevent.sleep(0)
+#     # slightly different semantics, due to the nature of metaagents
+#     def step_metaagent(self, cell):
+#         for metaagent in self.sim.metaagents:
+#             metaagent.run(self.sim, cell)
+#             gevent.sleep(0)
 
 
 def load_sim(simmodule, worker=WorkerSerial):

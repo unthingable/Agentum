@@ -50,6 +50,9 @@ class Model(object):
 
     stream_name = 'set stream_name!'
 
+    def __init__(self):
+        self._fields_previous = {}
+
     def id(self):
         '''
         Sequential ID of the object.
@@ -69,6 +72,10 @@ class Model(object):
                 value = field.from_string(value)
 
             original = getattr(self, key)
+            if original != value:
+                # maybe ignore completely?
+                self._fields_previous[key] = original
+
             qvalue = field.quantize(value, original)
             # Tell the world the value has changed
             if qvalue is not None:

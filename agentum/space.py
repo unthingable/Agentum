@@ -43,6 +43,7 @@ class Cell(Model):
     point = field.Field()
 
     def __init__(self, point, properties=None):
+        Model.__init__(self)
         self.agents = set()
         self.properties = properties or {}
         # import ipdb; ipdb.set_trace()
@@ -205,9 +206,9 @@ class GridSpace(CellSpace):
 
     def cells(self, traverse=None):
         if not traverse:
-            return self.idx_cell_map.values()
+            return self.idx_cell_map.itervalues()
         else:
-            return traverse(self.idx_cell_map.values())
+            return traverse(self.idx_cell_map.itervalues())
 
     def cell_point(self, cell):
         return self.cell_idx_map[cell]

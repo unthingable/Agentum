@@ -10,6 +10,7 @@ class Simulation(Model):
 #    space = field.SpaceField()
 
     def __init__(self):
+        Model.__init__(self)
         self.space = None    # A single "physical" space for now.
         # networks = {}
         self.agents = []

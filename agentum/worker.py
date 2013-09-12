@@ -93,6 +93,7 @@ class WorkerBase(object):
 
     def sim_init(self, force=False):
         if force or not self.is_setup:
+            self.sim.__init__()
             self.sim.setup()
             self.is_setup = True
 

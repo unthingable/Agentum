@@ -30,8 +30,6 @@ class HeatBugs(Simulation):
     def setup(self):
         # Create space
         self.space = CellSpace(BugCell, dimensions=self.dimensions)
-        # quick and dirty: make the sim resettable:
-        self.agents = []
 
         # Create agents
         # ... for now the hard way.

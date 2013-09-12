@@ -1,6 +1,6 @@
 docopt
 setuptools
 simplejson
-greenlet
-gevent
-gevent-websocket
+#greenlet
+#gevent
+#gevent-websocket

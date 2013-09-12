@@ -67,6 +67,12 @@ class State(Field):
         out['states'] = self.states
         return out
 
+    def quantize(self, value, original):
+        if value == original:
+            return None
+        else:
+            return value
+
 
 class Integer(Field):
     default = 0

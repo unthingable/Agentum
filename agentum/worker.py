@@ -14,6 +14,8 @@ import os
 
 from agentum import protocol, settings
 from agentum.simulation import Simulation
+from agentum.agent import Agent
+from agentum.space import Cell
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -96,6 +98,7 @@ class WorkerBase(object):
             self.sim.__init__()
             self.sim.setup()
             self.is_setup = True
+            self.steppables = {}
 
             # initialize steps
             if not self.sim.steps:
@@ -103,18 +106,21 @@ class WorkerBase(object):
             else:
                 for step in self.sim.steps:
                     # Limit the steps (for now)
-                    if inspect.ismethod(step) and step.im_self is None:
-                        continue
-                    raise Exception("Only unbounded methods can be steps")
+                    if not (inspect.ismethod(step) and step.im_self is None):
+                        raise Exception("Only unbounded methods can be steps")
 
-            self.steppables = defaultdict(set)
-            for agent in self.sim.agents:
-                self.steppables[agent.__class__].add(agent)
+                    if isinstance(step, (list, tuple)):
+                        step, iterfun = step
+                    else:
+                        if issubclass(step.im_class, Agent):
+                            iterfun = self.agents.__iter__
+                        elif issubclass(step.im_class, Cell):
+                            iterfun = self.space.cells
+                        else:
+                            raise Exception('Unknown step class, must provide an iterator')
+                    self.steppables[step.im_class] = iterfun
 
             if self.sim.space:
-                for cell in self.sim.space.cells():
-                    self.steppables[cell.__class__].add(cell)
-
                 protocol.send('sim space grid'.split() +
                               [self.sim.space.dimensions],
                               )
@@ -151,7 +157,7 @@ class WorkerSerial(WorkerBase):
         for step_method in sim.steps:
             # step is guaranteed to be an unbound method
             # by a check in sim_imit
-            for steppable in self.steppables[step_method.im_class]:
+            for steppable in self.steppables[step_method.im_class]():
                 step_method(steppable, sim)
 
         sim.after_step(self.stepnum)

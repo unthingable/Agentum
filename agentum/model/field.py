@@ -1,5 +1,11 @@
 #from random import random
+'''
+Why fields?
 
+Because we want to:
+* describe the field to the client, for vizualisation purposes
+* provide custom quantization
+'''
 
 class Field(object):
     def __init__(self, default=None, quant=None, scale=None):
@@ -56,6 +62,11 @@ class Field(object):
 class State(Field):
     # Could also have been called "fixed set"
     def __init__(self, states=[], default=None, **kw):
+        '''
+        Allowable state descriptors:
+        'string' or ('short id', 'string', {additional parameters})
+        where short id and additional parameters are optional.
+        '''
         if len(states) < 2:
             raise Exception('A state field must have more than '
                             'one possible state')
@@ -67,11 +78,17 @@ class State(Field):
         out['states'] = self.states
         return out
 
+    # This should probably be handled at the protocol level
     def quantize(self, value, original):
         if value == original:
             return None
         else:
             return value
+
+
+class Range(Field):
+    min_value = 0
+    max_value = 100
 
 
 class Integer(Field):
@@ -88,12 +105,23 @@ class Float(Field):
     from_string = float
 
 
+class UFloat(Float, Range):
+    default = 0.0
+    min_value = 0
+    max_value = 1
+
+
 class List(Field):
     default = []
 
     def __init__(self, field, *args, **kw):
         Field.__init__(self, *args, **kw)
         self.from_string = lambda x: map(field.from_string, x.split())
+
+
+# need valideer?
+class Dict(Field):
+    default = {}
 
 
 class SpaceField(Field):

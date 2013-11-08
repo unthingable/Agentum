@@ -106,16 +106,18 @@ class WorkerBase(object):
             else:
                 for step in self.sim.steps:
                     # Limit the steps (for now)
-                    if not (inspect.ismethod(step) and step.im_self is None):
-                        raise Exception("Only unbounded methods can be steps")
+                    if inspect.ismethod(step) and step.im_self is not None:
+                        self.steppables[step.im_class] = [step.im_self]
+                        continue
+                        # raise Exception("Only unbounded methods can be steps")
 
                     if isinstance(step, (list, tuple)):
                         step, iterfun = step
                     else:
                         if issubclass(step.im_class, Agent):
-                            iterfun = self.agents.__iter__
+                            iterfun = self.sim.agents.__iter__
                         elif issubclass(step.im_class, Cell):
-                            iterfun = self.space.cells
+                            iterfun = self.sim.space.cells
                         else:
                             raise Exception('Unknown step class, must provide an iterator')
                     self.steppables[step.im_class] = iterfun

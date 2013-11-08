@@ -1,3 +1,3 @@
 import logging
 
-LOGLEVEL = logging.INFO
+LOGLEVEL = logging.DEBUG

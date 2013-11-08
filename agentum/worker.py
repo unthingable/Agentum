@@ -10,6 +10,7 @@ import logging
 # from gevent.pool import Group
 import imp
 import inspect
+from itertools import ifilter
 import os
 
 from agentum import protocol, settings
@@ -107,7 +108,7 @@ class WorkerBase(object):
                 for step in self.sim.steps:
                     # Limit the steps (for now)
                     if inspect.ismethod(step) and step.im_self is not None:
-                        self.steppables[step.im_class] = [step.im_self]
+                        self.steppables[step.im_class] = [step.im_self].__iter__
                         continue
                         # raise Exception("Only unbounded methods can be steps")
 
@@ -115,6 +116,7 @@ class WorkerBase(object):
                         step, iterfun = step
                     else:
                         if issubclass(step.im_class, Agent):
+                            # multiple agent types supported, step() will filter
                             iterfun = self.sim.agents.__iter__
                         elif issubclass(step.im_class, Cell):
                             iterfun = self.sim.space.cells
@@ -140,9 +142,6 @@ class WorkerBase(object):
             self.step(flush=False)
         protocol.flush(lambda x: ['frame', self.stepnum, x])
 
-    # def step_agent(self, agent):
-    #     agent.run(self.sim)
-
 
 class WorkerSerial(WorkerBase):
 
@@ -157,10 +156,16 @@ class WorkerSerial(WorkerBase):
         sim.before_step(self.stepnum)
 
         for step_method in sim.steps:
-            # step is guaranteed to be an unbound method
-            # by a check in sim_imit
+            # log.debug('calling %r' % step_method)
             for steppable in self.steppables[step_method.im_class]():
-                step_method(steppable, sim)
+                # log.debug('calling %r on %r' % (step_method, steppable))
+                if step_method.im_self is not None:
+                    if isinstance(step_method.im_self, sim.__class__):
+                        step_method()
+                    else:
+                        step_method(sim)
+                elif isinstance(steppable, step_method.im_class):
+                    step_method(steppable, sim)
 
         sim.after_step(self.stepnum)
         if flush:

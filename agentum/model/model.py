@@ -85,7 +85,7 @@ class Model(object):
                 output = filter(lambda x: x is not None,
                                 (self.stream_name, key, self.id(), qvalue))
                 # o = ' '.join(output)
-                log.debug('%r <- %r' % (qvalue, original))
+                log.debug('%s: %r <- %r' % (key, qvalue, original))
                 protocol.send(output)
         object.__setattr__(self, key, value)
 

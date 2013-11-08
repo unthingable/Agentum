@@ -244,12 +244,17 @@ class GridSpace(CellSpace):
     # Maybe expose it directly?
     # Discuss which interface is more useful.
     def find(self, agent):
-        return self.agent_map[agent]
+        return self.agent_map.get(agent, None)
 
     def move(self, agent, cell):
         # optimize later
         log.debug("%s: -> %s" % (agent, self.cell_idx_map[cell]))
+        old_cell = self.find(agent)
         self.agent_map[agent] = cell
+        if old_cell:
+            old_cell.agents.remove(agent)
+        cell.agents.add(agent)
+        agent.point = cell.id()
 
     def add_agent(self, agent, cell):
         self.agent_map[agent] = cell

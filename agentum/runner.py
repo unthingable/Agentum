@@ -9,6 +9,10 @@ import logging
 import argparse
 import signal
 import mimetypes
+try:
+    import ipdb as pdb
+except:
+    import pdb
 
 from agentum import worker as w
 from agentum import protocol
@@ -20,6 +24,12 @@ from . import settings
 logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
+
+
+def dbhandler(signum, frame):
+    pdb.set_trace()
+
+signal.signal(signal.SIGQUIT, dbhandler)
 
 # TODO: extract fields from sim and add to arguments
 
@@ -61,7 +71,7 @@ def update_module_config(options, module):
 
 
 def run_main():
-    gevent.signal(signal.SIGQUIT, gevent.shutdown)
+    gevent.signal(signal.SIGQUIT, dbhandler)
     gevent.signal(signal.SIGTERM, gevent.shutdown)
     gevent.signal(signal.SIGHUP, gevent.shutdown)
 

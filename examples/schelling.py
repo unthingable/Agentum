@@ -71,14 +71,14 @@ class Schelling(Simulation):
                 agent = Turtle()
                 agent.color = color
                 # Force the agent to move to a new random cell
-                if agent.move(self, force=True) is not None:
+                if agent.move(self, force=True):
                     self.agents.append(agent)
                 else:
                     raise Exception("Could not move in a new agent: pond is full")
 
-        self.steps = ((Patch.update_ratios, Turtle.move, self.shuffle_turtles))
+        self.steps = ((Patch.update_ratios, (Turtle.move, self.shuffled_turtles)))
 
-    def shuffle_turtles(self):
+    def shuffled_turtles(self):
         '''
         Ensure random ordering of agents
         '''

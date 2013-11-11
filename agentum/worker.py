@@ -113,21 +113,20 @@ class WorkerBase(object):
             self.sim.setup()
             self.is_setup = True
             self.steppables = {}
+            self.steps = []
 
             # initialize steps
             if not self.sim.steps:
                 raise Exception("Must specify simulation steps")
             else:
                 for step in self.sim.steps:
-                    # Limit the steps (for now)
-                    if inspect.ismethod(step) and step.im_self is not None:
-                        self.steppables[step.im_class] = [step.im_self].__iter__
-                        continue
-                        # raise Exception("Only unbounded methods can be steps")
-
                     if isinstance(step, (list, tuple)):
                         step, iterfun = step
                     else:
+                        if inspect.ismethod(step) and step.im_self is not None:
+                            self.steppables[step.im_class] = [step.im_self].__iter__
+                            continue
+                            # raise Exception("Only unbounded methods can be steps")
                         if issubclass(step.im_class, Agent):
                             # multiple agent types supported, step() will filter
                             iterfun = self.sim.agents.__iter__
@@ -136,6 +135,7 @@ class WorkerBase(object):
                         else:
                             raise Exception('Unknown step class, must provide an iterator')
                     self.steppables[step.im_class] = iterfun
+                    self.steps.append(step)
 
             if self.sim.space:
                 protocol.send('sim space grid'.split() +
@@ -170,7 +170,7 @@ class WorkerSerial(WorkerBase):
 
         sim.before_step(self.stepnum)
 
-        for step_method in sim.steps:
+        for step_method in self.steps:
             # log.debug('calling %r' % step_method)
             for steppable in self.steppables[step_method.im_class]():
                 # log.debug('calling %r on %r' % (step_method, steppable))

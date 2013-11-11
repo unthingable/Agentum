@@ -64,7 +64,11 @@ class WorkerCmd(Cmd):
                 setattr(self.worker.sim, field, value)
                 protocol.flush()
             else:
-                protocol.push(getattr(self.worker.sim, field))
+                attr = getattr(self.worker.sim, field)
+                if not hasattr(attr, '__call__'):
+                    protocol.push(attr)
+                else:
+                    protocol.push(attr())
 
     # # Prototype cell interaction
     # def do_cell(self, s):

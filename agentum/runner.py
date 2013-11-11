@@ -92,7 +92,7 @@ def run_main():
             socket.send("Welcome to simulation server\n")
 
             def push(obj):
-                socket.send("%s\n" % repr(obj))
+                socket.send("%s\n" % obj)
             protocol.push = push
 
             worker = load_sim(simmodule)

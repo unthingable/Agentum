@@ -60,7 +60,7 @@ class Model(object):
         if not self in ids:
             id_seq[self.__class__] += 1
             ids[self] = id_seq[self.__class__]
-        return str(ids[self])
+        return self.stream_name[0] + str(ids[self])
 
     def __setattr__(self, key, value):
         # May have to optimize this later

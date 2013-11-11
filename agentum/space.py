@@ -248,7 +248,7 @@ class GridSpace(CellSpace):
 
     def move(self, agent, cell):
         # optimize later
-        log.debug("%s: -> %s" % (agent, self.cell_idx_map[cell]))
+        log.debug("%s: -> %s" % (agent.id(), self.cell_idx_map[cell]))
         old_cell = self.find(agent)
         self.agent_map[agent] = cell
         if old_cell:
@@ -264,6 +264,33 @@ class GridSpace(CellSpace):
 
     def agents(self, with_cells=False):
         return self.agent_map.keys()
+
+    def bbox(self, bounds=None, func=None):
+        '''
+        Return a nested row view of the grid.
+        bounds: optional 2-tuple of points representing the bounds of the bbox
+        func: optional function to be mapped
+        '''
+        start, end = bounds or ([0] * len(self.dimensions),
+                                self.dimensions)
+
+        ranges = [xrange(*x) for x in izip(start, end)]
+
+        def rowiter(ranges, prefix):
+            current_range = ranges[0]
+
+            def cell_getter(x):
+                return self.idx_cell_map[tuple(prefix + [x])]
+
+            if len(ranges) > 1:
+                return [rowiter(ranges[1:], prefix + [x]) for x in current_range]
+            else:
+                if func:
+                    return [func(cell_getter(x)) for x in current_range]
+                else:
+                    return [cell_getter(x) for x in current_range]
+
+        return rowiter(ranges, [])
 
 # TODO: same cell index semantic as CellSpace
 # class GraphSpace(CellSpace):

@@ -46,7 +46,9 @@ class Turtle(Agent):
                     break
             if new_home:
                 sim.space.move(self, new_home)
-            # else: grumble, I'm so unhappy
+            else:
+                # dear facebook, I'm sooo unhappy
+                print '%s wanted to move but could not' % self.id()
         # for manual placement
         return new_home
 
@@ -56,8 +58,8 @@ class Schelling(Simulation):
     Schelling segregation model
     '''
     dimensions = field.List(field.Integer, (10, 10))
-    agent_params = {'red': {'fill': 0.2, 'tolerance': 0.01},
-                    'blue': {'fill': 0.1, 'tolerance': 0.01}}
+    agent_params = {'red': {'fill': 2, 'tolerance': 0.1},
+                    'blue': {'fill': 0.1, 'tolerance': 0.4}}
 
     def setup(self):
         self.space = GridSpace(Patch, dimensions=self.dimensions)
@@ -65,7 +67,7 @@ class Schelling(Simulation):
 
         # seed the board randomly
         for color, params in self.agent_params.iteritems():
-            for n in xrange(int(total / params['fill'])):
+            for n in xrange(int(total * params['fill'])):
                 agent = Turtle()
                 agent.color = color
                 # self.space.add_agent(agent, None)
@@ -84,4 +86,15 @@ class Schelling(Simulation):
         agents = list(self.agents)
         shuffle(agents)
         return agents
+
+    def dump(self):
+        def formatter(cell):
+            if len(cell.agents) > 1:
+                return '+'
+            elif cell.agents:
+                return cell.agents.copy().pop().color[0]
+            else:
+                return ' '
+        matrix = self.space.bbox(func=formatter)
+        return '\n'.join(''.join(x) for x in matrix)
 

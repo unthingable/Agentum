@@ -50,7 +50,10 @@ def greet():
 # Push the object onto the client stream (websocket, etc.)
 # Override to do meaningful stuff
 def push(obj):
-    print repr(obj)
+    if isinstance(obj, (str, unicode)):
+        print obj
+    else:
+        print repr(obj)
 
 # This is between us and downstream
 _buffer_tree = {}

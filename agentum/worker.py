@@ -150,7 +150,7 @@ class WorkerBase(object):
         """
         self.sim_init()
         log.info("Running simulation %s for %d steps..." %
-                 (self.module.__name__, steps))
+                 (self.sim.__class__.__name__, steps))
         for n in zrange(steps):
             # TODO: get messages and stop if requested, otherwise:
             self.step(flush=False)

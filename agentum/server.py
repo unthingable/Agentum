@@ -23,6 +23,7 @@ http://stackoverflow.com/questions/10656953/redis-gevent-poor-performance-what-a
 import logging
 from cmd import Cmd
 from functools import wraps
+import traceback
 
 from agentum import protocol, settings
 
@@ -37,6 +38,7 @@ def exit_on_exception(meth):
         try:
             return meth(*args, **kw)
         except:
+            traceback.print_exc()
             return True
     return wrapper
 

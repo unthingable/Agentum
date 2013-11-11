@@ -22,11 +22,23 @@ http://stackoverflow.com/questions/10656953/redis-gevent-poor-performance-what-a
 
 import logging
 from cmd import Cmd
+from functools import wraps
+
 from agentum import protocol, settings
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
+
+
+def exit_on_exception(meth):
+    @wraps(meth)
+    def wrapper(*args, **kw):
+        try:
+            return meth(*args, **kw)
+        except:
+            return True
+    return wrapper
 
 
 class WorkerCmd(Cmd):
@@ -36,6 +48,7 @@ class WorkerCmd(Cmd):
         self.worker = worker
         self.prompt = '%s> ' % worker.simclass.__name__
 
+    @exit_on_exception
     def do_init(self, s):
         self.worker.sim_init(force=True)
 
@@ -46,15 +59,18 @@ class WorkerCmd(Cmd):
         pass
         # return True
 
+    @exit_on_exception
     def do_step(self, s):
         self.worker.step()
 
+    @exit_on_exception
     def do_run(self, s=100):
         self.worker.run(int(s))
 
     # Below: throw away and reengineer. Do not use as an example.
 
     # Parameter feedback prototype
+    @exit_on_exception
     def do_sim(self, s):
         field, _, value = s.partition(' ')
         if not field:

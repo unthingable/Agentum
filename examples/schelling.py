@@ -39,8 +39,7 @@ class Turtle(Agent):
         if force or home.ratios[self.color] > tolerance:
             # gotta move!
             for cell in sim.space.cells(CellSpace.tr_random):
-                if force or (cell.ratios[self.color] > tolerance
-                             and not cell.agents):
+                if cell.ratios[self.color] > tolerance and not cell.agents:
                     # this is good, I'll move
                     new_home = cell
                     break
@@ -58,7 +57,7 @@ class Schelling(Simulation):
     Schelling segregation model
     '''
     dimensions = field.List(field.Integer, (10, 10))
-    agent_params = {'red': {'fill': 2, 'tolerance': 0.1},
+    agent_params = {'red': {'fill': 0.7, 'tolerance': 0.1},
                     'blue': {'fill': 0.1, 'tolerance': 0.4}}
 
     def setup(self):
@@ -70,12 +69,11 @@ class Schelling(Simulation):
             for n in xrange(int(total * params['fill'])):
                 agent = Turtle()
                 agent.color = color
-                # self.space.add_agent(agent, None)
                 # Force the agent to move to a new random cell
-                if agent.move(self, True):
+                if agent.move(self, force=True) is not None:
                     self.agents.append(agent)
                 else:
-                    raise Exception("Could not move in a new agent: %d is too many" % n)
+                    raise Exception("Could not move in a new agent: pond is full")
 
         self.steps = ((Patch.update_ratios, Turtle.move, self.shuffle_turtles))
 
@@ -97,4 +95,3 @@ class Schelling(Simulation):
                 return ' '
         matrix = self.space.bbox(func=formatter)
         return '\n'.join(''.join(x) for x in matrix)
-

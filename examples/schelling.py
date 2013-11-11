@@ -56,9 +56,9 @@ class Schelling(Simulation):
     '''
     Schelling segregation model
     '''
-    dimensions = field.List(field.Integer, (10, 10))
-    agent_params = {'red': {'fill': 0.7, 'tolerance': 0.1},
-                    'blue': {'fill': 0.1, 'tolerance': 0.4}}
+    dimensions = field.List(field.Integer, (20, 40))
+    agent_params = {'red': {'fill': 0.4, 'tolerance': 0.1},
+                    'blue': {'fill': 0.4, 'tolerance': 0.6}}
 
     def setup(self):
         self.space = GridSpace(Patch, dimensions=self.dimensions)

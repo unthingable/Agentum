@@ -25,6 +25,7 @@ class Patch(Cell):
             ratio = float(total_neighbors - totals[color]) / total_neighbors
             self.ratios[color] = ratio
 
+
 class Turtle(Agent):
     '''
     Call it what you will.

@@ -41,10 +41,15 @@ def arg_parser():
     #                   help="The number of simulation steps"
     #                   )
 
-    parser.add_argument("-p", dest="plain",
+    parser.add_argument("-t", dest="telnet",
                       action="store_true",
                       help="Launch plain telnet console"
                       )
+    parser.add_argument("-w", dest="web",
+                      action="store_true",
+                      help="Launch websocket server"
+                      )
+
     parser.add_argument('module')
 
     return parser
@@ -86,32 +91,7 @@ def run_main():
     # if not options.gui:
     #     worker.load(module)
     #     worker.run()
-    if args.plain:
-        def handle(socket, address):
-            log.debug("Connected: %s" % str(address))
-            socket.send("Welcome to simulation server\n")
-
-            def push(obj):
-                socket.send("%s\n" % obj)
-            protocol.push = push
-
-            worker = load_sim(simmodule)
-            fileobj = socket.makefile()
-
-            cmd = WorkerCmd(worker, stdin=fileobj, stdout=fileobj)
-            cmd.use_rawinput = False
-            cmd.cmdloop()
-            fileobj.close()
-            socket.close()
-
-            log.debug("Disconnected: %s" % str(address))
-
-        server = StreamServer(('127.0.0.1', 5000), handle)
-        log.info("Starting server %s" % str(server))
-        server.serve_forever()
-
-        return
-    else:
+    if args.web:
         import os.path
         from gevent import pywsgi
         from geventwebsocket.handler import WebSocketHandler
@@ -164,3 +144,39 @@ def run_main():
         #     paste.urlparser.StaticURLParser(os.path.dirname(__file__)))
         print "Connect to http://localhost:9990/"
         ws_server.serve_forever()
+
+    elif args.telnet:
+        def handle(socket, address):
+            log.debug("Connected: %s" % str(address))
+            socket.send("Welcome to simulation server\n")
+
+            def push(obj):
+                socket.send("%s\n" % obj)
+            protocol.push = push
+
+            worker = load_sim(simmodule)
+            fileobj = socket.makefile()
+
+            cmd = WorkerCmd(worker, stdin=fileobj, stdout=fileobj)
+            cmd.use_rawinput = False
+            cmd.cmdloop()
+            fileobj.close()
+            socket.close()
+
+            log.debug("Disconnected: %s" % str(address))
+
+        server = StreamServer(('127.0.0.1', 5000), handle)
+        log.info("Starting server %s" % str(server))
+        server.serve_forever()
+
+        return
+    else:
+        # def push(obj):
+        #     socket.send("%s\n" % obj)
+        # protocol.push = push
+
+        worker = load_sim(simmodule)
+
+        cmd = WorkerCmd(worker)
+        # cmd.use_rawinput = False
+        cmd.cmdloop()

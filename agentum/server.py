@@ -106,6 +106,7 @@ class WorkerCmd(Cmd):
 
     @exit_on_exception
     def do_init(self, s):
+        '(Re)initialize the simulation.'
         self.worker.sim_init(force=True)
 
     def do_quit(self, s):
@@ -117,10 +118,12 @@ class WorkerCmd(Cmd):
 
     @exit_on_exception
     def do_step(self, s):
+        'Execute a single simulation step'
         self.worker.step()
 
     @exit_on_exception
     def do_run(self, s=100):
+        'run N: execute N steps in batch'
         self.worker.run(int(s))
 
     # Below: throw away and reengineer. Do not use as an example.
@@ -128,6 +131,7 @@ class WorkerCmd(Cmd):
     # Parameter feedback prototype
     @exit_on_exception
     def do_sim(self, s):
+        'Access simulation parameters'
         field, _, value = s.partition(' ')
         if not field:
             protocol.push(self.worker.sim._fields)

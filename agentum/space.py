@@ -6,7 +6,7 @@ from itertools import product, izip, imap, ifilter
 from collections import namedtuple
 from abc import abstractmethod, ABCMeta
 from operator import itemgetter
-from random import choice
+from random import choice, shuffle
 from functools import wraps
 import math
 import logging
@@ -115,6 +115,12 @@ class CellSpace(object):
         Full random node space traversal.
         All nodes guaranteed to be visited once.
         """
+        # itemscopy = list(items)
+        # shuffle(itemscopy)
+        # for x in itemscopy:
+        #     yield x
+
+        # this is considerably faster:
         from collections import deque
         remaining = deque(items)
         while remaining:

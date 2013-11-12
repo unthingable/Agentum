@@ -2,9 +2,6 @@
 
 # Rudiments of the worker code
 
-import gevent
-from gevent import monkey; monkey.patch_all()
-from gevent.server import StreamServer
 import logging
 import argparse
 import signal
@@ -76,9 +73,6 @@ def update_module_config(options, module):
 
 
 def run_main():
-    gevent.signal(signal.SIGQUIT, dbhandler)
-    gevent.signal(signal.SIGTERM, gevent.shutdown)
-    gevent.signal(signal.SIGHUP, gevent.shutdown)
 
     parser = arg_parser()
     args = parser.parse_args()
@@ -92,6 +86,13 @@ def run_main():
     #     worker.load(module)
     #     worker.run()
     if args.web:
+        import gevent
+        from gevent import monkey; monkey.patch_all()
+        from gevent.server import StreamServer
+        gevent.signal(signal.SIGQUIT, dbhandler)
+        gevent.signal(signal.SIGTERM, gevent.shutdown)
+        gevent.signal(signal.SIGHUP, gevent.shutdown)
+
         import os.path
         from gevent import pywsgi
         from geventwebsocket.handler import WebSocketHandler
@@ -146,6 +147,13 @@ def run_main():
         ws_server.serve_forever()
 
     elif args.telnet:
+        import gevent
+        from gevent import monkey; monkey.patch_all()
+        from gevent.server import StreamServer
+        gevent.signal(signal.SIGQUIT, dbhandler)
+        gevent.signal(signal.SIGTERM, gevent.shutdown)
+        gevent.signal(signal.SIGHUP, gevent.shutdown)
+
         def handle(socket, address):
             log.debug("Connected: %s" % str(address))
             socket.send("Welcome to simulation server\n")

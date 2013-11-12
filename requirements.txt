@@ -4,3 +4,4 @@ simplejson
 #greenlet
 #gevent
 #gevent-websocket
+colorama

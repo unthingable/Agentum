@@ -2,6 +2,8 @@ from collections import defaultdict
 from itertools import chain
 from random import shuffle
 
+from colorama import Fore
+
 from agentum.simulation import Simulation
 from agentum.space import CellSpace, GridSpace, Cell
 from agentum.agent import Agent
@@ -59,7 +61,7 @@ class Schelling(Simulation):
     '''
     dimensions = field.List(field.Integer, (20, 40))
     agent_params = field.Field({'red': {'fill': 0.1, 'tolerance': 0.1},
-                               'blue': {'fill': 0.4, 'tolerance': 0.1}})
+                                'blue': {'fill': 0.4, 'tolerance': 0.1}})
 
     def setup(self):
         self.space = GridSpace(Patch, dimensions=self.dimensions)
@@ -87,11 +89,13 @@ class Schelling(Simulation):
         return agents
 
     def dump(self):
+        colormap = {'b': Fore.BLUE + 'o', 'r': Fore.RED + 'o'}
+
         def formatter(cell):
             if len(cell.agents) > 1:
                 return '+'
             elif cell.agents:
-                return cell.agents.copy().pop().color[0]
+                return colormap[cell.agents.copy().pop().color[0]] + Fore.RESET
             else:
                 return ' '
         matrix = self.space.bbox(func=formatter)

@@ -53,7 +53,7 @@ def _getone(obj, f):
 def _setone(obj, f, v):
     prev = _getone(obj, f)
     # coerce types (should be part of model?)
-    if prev:
+    if prev and isinstance(prev, (int, float)):
         v = type(prev)(v)
     if isinstance(obj, dict):
         obj[f] = v

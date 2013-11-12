@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, Counter
 from itertools import chain
 from random import shuffle
 
@@ -13,17 +13,22 @@ from agentum.model.field import Integer as I, Float as F, UFloat as UF
 
 
 class Patch(Cell):
-    ratios = field.Field(defaultdict(lambda: 1))
+    ratios = defaultdict(lambda: 1)
 
     def update_ratios(self, sim):
         hood = sim.space.neighbors(self, r=1)
         total_neighbors = 0
         totals = defaultdict(int)
-        for cell in chain(hood, [self]):
+        # totals = Counter()
+        hood = list(chain(hood, [self]))
+        for cell in hood:
             total_neighbors += len(cell.agents)
             for resident in cell.agents:
                 totals[resident.color] += 1
+            # Counter seems slower:
+            # totals.update(resident.color for resident in cell.agents)
         for color in totals:
+            # Ratio of friends among neighbors
             ratio = float(total_neighbors - totals[color]) / total_neighbors
             self.ratios[color] = ratio
 
@@ -39,7 +44,7 @@ class Turtle(Agent):
         home = sim.space.find(self)
         new_home = None
         tolerance = sim.agent_params[self.color]['tolerance']
-        if force or home.ratios[self.color] > tolerance:
+        if force or home.ratios[self.color] < tolerance:
             # gotta move!
             new_home = next(x for x in sim.space.cells(CellSpace.tr_random) if not x.agents)
             # for cell in sim.space.cells(CellSpace.tr_random):
@@ -61,8 +66,8 @@ class Schelling(Simulation):
     Schelling segregation model
     '''
     dimensions = field.List(field.Integer, (20, 40))
-    agent_params = field.Field({'red': {'fill': 0.1, 'tolerance': 0.4},
-                                'blue': {'fill': 0.4, 'tolerance': 0.4}})
+    agent_params = {'red': {'fill': 0.4, 'tolerance': 0.7},
+                    'blue': {'fill': 0.4, 'tolerance': 0.7}}
 
     def setup(self):
         self.space = GridSpace(Patch, dimensions=self.dimensions)

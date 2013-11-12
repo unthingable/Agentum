@@ -84,7 +84,6 @@ class WorkerBase(object):
     module = None
 
     _num_cells = 0
-    stepnum = 0
     steps = None
 
     def __init__(self, simclass):
@@ -114,6 +113,7 @@ class WorkerBase(object):
             self.is_setup = True
             self.steppables = {}
             self.steps = []
+            self.stepnum = 0
 
             # initialize steps
             if not self.sim.steps:

@@ -43,6 +43,60 @@ def exit_on_exception(meth):
     return wrapper
 
 
+def _getone(obj, f):
+    if isinstance(obj, dict):
+        return obj[f]
+    else:
+        return getattr(obj, f)
+
+
+def _setone(obj, f, v):
+    prev = _getone(obj, f)
+    # coerce types (should be part of model?)
+    if prev:
+        v = type(prev)(v)
+    if isinstance(obj, dict):
+        obj[f] = v
+    else:
+        setattr(obj, f, v)
+
+
+def _hasattr(obj, field):
+    if isinstance(field, list):
+        fields = field
+    else:
+        fields = field.split('.')
+    if len(fields) == 1:
+        if isinstance(obj, dict):
+            return field[0] in obj
+        else:
+            return hasattr(obj, fields[0])
+    else:
+        return _hasattr(_getone(obj, fields[0]), fields[1:])
+
+
+def _setattr(obj, field, value):
+    if isinstance(field, list):
+        fields = field
+    else:
+        fields = field.split('.')
+    if len(fields) == 1:
+        _setone(obj, fields[0], value)
+    else:
+        _setattr(_getone(obj, fields[0]), fields[1:], value)
+
+
+def _getattr(obj, field):
+    if isinstance(field, list):
+        fields = field
+    else:
+        fields = field.split('.')
+    if len(fields) == 1:
+        return _getone(obj, fields[0])
+    else:
+        return _getattr(_getone(obj, fields[0]), fields[1:])
+
+
 class WorkerCmd(Cmd):
 
     def __init__(self, worker, *args, **kwargs):
@@ -77,12 +131,12 @@ class WorkerCmd(Cmd):
         field, _, value = s.partition(' ')
         if not field:
             protocol.push(self.worker.sim._fields)
-        elif hasattr(self.worker.sim, field):
+        elif _hasattr(self.worker.sim, field):
             if value:
-                setattr(self.worker.sim, field, value)
+                _setattr(self.worker.sim, field, value)
                 protocol.flush()
             else:
-                attr = getattr(self.worker.sim, field)
+                attr = _getattr(self.worker.sim, field)
                 if not hasattr(attr, '__call__'):
                     protocol.push(attr)
                 else:

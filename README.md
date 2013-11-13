@@ -45,6 +45,16 @@ If all goes well you should be able to do:
     $ agentum
     usage: agentum [-h] [-p] module
 
+## I'm not on Linux
+
+I'm sorry. Get with [the program](http://unthingable.eat-up.org/posts/2010/Jan/10/why-virtualize-your-development/)!
+
+This might help with installing `gevent` on OSX:
+
+    $ brew install libevent
+    $ export CFLAGS="-I /usr/local/Cellar/libevent/2.0.21/include -L /usr/local/Cellar/libevent/2.0.21/lib"
+    $ pip install gevent
+
 # Running Agentum
 
 Running Agentum is simple: all you need is a path to a Python file containing the simulation class.

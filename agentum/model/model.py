@@ -32,6 +32,7 @@ class ModelMeta(type):
             if isinstance(attr, Field):
                 fields[name] = attr
                 attrs[name] = attr.default
+                log.debug('%s.%s > %s', class_name, name, attr.default)
         attrs['_fields'] = fields
 
         return super(ModelMeta, meta).__new__(meta, class_name, bases, attrs)

@@ -133,8 +133,9 @@ class WorkerCmd(Cmd):
     def do_sim(self, s):
         'Access simulation parameters'
         field, _, value = s.partition(' ')
+        sim = self.worker.sim
         if not field:
-            protocol.push(self.worker.sim._fields)
+            protocol.push({k: getattr(sim, k) for k in sim._fields.keys()})
         elif _hasattr(self.worker.sim, field):
             if value:
                 _setattr(self.worker.sim, field, value)

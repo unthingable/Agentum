@@ -11,11 +11,6 @@ try:
 except:
     import pdb
 
-from agentum import worker as w
-from agentum import protocol
-from agentum.server import WorkerCmd
-from agentum.worker import load_sim
-
 from . import settings
 
 logging.basicConfig()
@@ -45,6 +40,10 @@ def arg_parser():
     parser.add_argument("-w", dest="web",
                       action="store_true",
                       help="Launch websocket server"
+                      )
+    parser.add_argument("-d", dest="debug",
+                      action="store_true",
+                      help="Turn on debugging output"
                       )
 
     parser.add_argument('module')
@@ -85,6 +84,17 @@ def run_main():
     # if not options.gui:
     #     worker.load(module)
     #     worker.run()
+
+    if args.debug:
+        log.setLevel(logging.DEBUG)
+        settings.LOGLEVEL = logging.DEBUG
+        log.debug('Enabled debugging')
+
+    from agentum import worker as w
+    from agentum import protocol
+    from agentum.server import WorkerCmd
+    from agentum.worker import load_sim
+
     if args.web:
         import gevent
         from gevent import monkey; monkey.patch_all()

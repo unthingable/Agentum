@@ -84,6 +84,7 @@ class Schelling(Simulation):
                 else:
                     raise Exception("Could not move in a new agent: pond is full")
 
+        self.update_fig()
         self.steps = ((Patch.update_ratios, (Turtle.move, self.shuffled_turtles)))
 
     def shuffled_turtles(self):
@@ -107,10 +108,10 @@ class Schelling(Simulation):
         matrix = self.space.bbox(func=formatter)
         return '\n'.join(''.join(x) for x in matrix)
 
-    def draw(self):
+    def update_fig(self):
+        from matplotlib import pyplot as plt
         from matplotlib import transforms
         if not hasattr(self, 'fig'):
-            from matplotlib import pyplot as plt
             plt.axis('off')
             self.fig = plt.figure()
             self.plt = self.fig.add_subplot(111,
@@ -135,5 +136,29 @@ class Schelling(Simulation):
                           linestyle='None',
                           markersize=8,
                           transform=offset)
+        # plt.draw()
 
+    def draw(self):
+        self.update_fig()
         self.fig.show()
+
+
+if __name__ == '__main__':
+    from agentum.worker import WorkerSerial as Worker
+    import enaml
+    from enaml.qt.qt_application import QtApplication
+
+    with enaml.imports():
+        from schelling_view import SchellingView
+
+    from agentum import protocol
+    protocol.push = lambda x: None
+
+    w = Worker(Schelling)
+    w.sim_init()
+
+    app = QtApplication()
+    view = SchellingView(worker=w)
+    view.show()
+
+    app.start()

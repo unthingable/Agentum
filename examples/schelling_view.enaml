@@ -1,0 +1,37 @@
+from enaml.layout.api import vbox, hbox, spacer
+from enaml.widgets.api import Window, Container, MPLCanvas, CheckBox, ComboBox, PushButton as Button
+
+from matplotlib.figure import Figure
+
+
+enamldef SchellingView(Window):
+    attr worker
+    Container:
+        constraints = [
+            vbox(
+                hbox(reset, step, step100, spacer),
+                canvas,
+            ),
+            # cbox.v_center == check.v_center,
+        ]
+        Button: reset:
+            text = 'Reset'
+#            enabled := worker.running
+            clicked :: worker.sim_init(force=True); canvas.proxy._refresh_mpl_widget()
+        Button: step:
+            text = 'Step'
+            clicked :: worker.step(); worker.sim.update_fig(); canvas.proxy._refresh_mpl_widget()
+        Button: step100:
+            text = 'Step 100'
+            clicked ::
+                worker.running = True
+                worker.run(100)
+                worker.sim.update_fig()
+                canvas.proxy._refresh_mpl_widget()
+                worker.running = False
+#        CheckBox: check:
+#            text = 'Toolbar Visible'
+#            checked := canvas.toolbar_visible
+        MPLCanvas: canvas:
+            figure << worker.sim.fig
+

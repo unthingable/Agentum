@@ -27,11 +27,11 @@ log.setLevel(settings.LOGLEVEL)
 # result_queue = Queue()
 
 
-def report_exception(meth):
+def execute_and_watch(meth):
     @wraps(meth)
-    def wrapper(*args, **kw):
+    def wrapper(self, *args, **kw):
         try:
-            return meth(*args, **kw)
+            return meth(self, *args, **kw)
         except Exception, e:
             protocol.send(['ERROR', str(e)], compress=False)
             raise
@@ -85,6 +85,7 @@ class WorkerBase(object):
 
     _num_cells = 0
     steps = None
+    running = False
 
     def __init__(self, simclass):
         self.simclass = simclass
@@ -105,7 +106,7 @@ class WorkerBase(object):
         # simulations.append(sim)
         # ...
 
-    @report_exception
+    @execute_and_watch
     def sim_init(self, force=False):
         if force or not self.is_setup:
             self.sim.__init__()
@@ -143,7 +144,7 @@ class WorkerBase(object):
                               )
             protocol.flush(lambda x: ['preamble', x])
 
-    @report_exception
+    @execute_and_watch
     def run(self, steps=100):
         """
         Run the simulation for N steps. Set to 0 to run endlessly.
@@ -159,7 +160,7 @@ class WorkerBase(object):
 
 class WorkerSerial(WorkerBase):
 
-    @report_exception
+    @execute_and_watch
     def step(self, flush=True):
         self.sim_init()
 

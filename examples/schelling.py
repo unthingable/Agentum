@@ -106,3 +106,34 @@ class Schelling(Simulation):
                 return ' '
         matrix = self.space.bbox(func=formatter)
         return '\n'.join(''.join(x) for x in matrix)
+
+    def draw(self):
+        from matplotlib import transforms
+        if not hasattr(self, 'fig'):
+            from matplotlib import pyplot as plt
+            plt.axis('off')
+            self.fig = plt.figure()
+            self.plt = self.fig.add_subplot(111,
+                                            axisbg='k',
+                                            aspect='equal')
+
+        offset = transforms.offset_copy(self.plt.transData,
+                                        x=5, y=5, units='dots')
+
+        # bucket patches
+        buckets = {'b': [],
+                   'r': []}
+
+        for cell in self.space.cells():
+            if cell.agents:
+                buckets[cell.agents.copy().pop().color[0]].append(cell.point)
+
+        self.plt.clear()
+        for b, points in buckets.items():
+            self.plt.plot(*zip(*points), marker='o',
+                          markerfacecolor=b,
+                          linestyle='None',
+                          markersize=8,
+                          transform=offset)
+
+        self.fig.show()

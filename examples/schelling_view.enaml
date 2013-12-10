@@ -2,44 +2,13 @@ from itertools import product
 from threading import Thread
 
 from atom.api import Atom, Bool, Unicode, Event
-from enaml.layout.api import vbox, hbox, spacer
+from enaml.layout.api import vbox, hbox, spacer, align
 from enaml.core.api import Looper
+from enaml.stdlib.fields import IntField
 from enaml.widgets.api import Window, Container, Label, MPLCanvas, CheckBox, ComboBox, PushButton as Button, PushButton, Slider, Form, GroupBox
 from enaml.application import Application
 
 from matplotlib.figure import Figure
-
-class Bus(Atom):
-    running = Bool(False)
-    event = Event()
-
-bus = Bus()
-
-def setrunning(b):
-    bus.running = b
-
-def runloop(worker, steps):
-    bus.running = True
-    worker.run(steps)
-    worker.sim.update_fig()
-    bus.running = False
-
-
-def refresh_canvas(canvas_proxy):
-    canvas_proxy._refresh_mpl_widget()
-    # import ipdb; ipdb.set_trace()
-
-enamldef SingleSlider(Form):
-    attr color
-    attr param
-    Label:
-        text << "%s %s: %d" % (color, param, slider.value)
-    Slider: slider:
-        tick_interval = 1
-        maximum = 100
-        minimum = 1
-        value << int(worker.sim.agent_params[color][param] * 100)
-        value :: worker.sim.agent_params[color][param] = slider.value / 100.0
 
 
 enamldef SchellingView(Window):
@@ -49,7 +18,7 @@ enamldef SchellingView(Window):
         constraints = [
             vbox(
                 hbox(reset, step, step100, spacer),
-                hbox(controls, canvas),
+                hbox(vbox(dim, controls), canvas),
             ),
             # cbox.v_center == check.v_center,
         ]
@@ -70,17 +39,21 @@ enamldef SchellingView(Window):
                 worker.run(100);
                 worker.sim.update_fig();
                 canvas.proxy._refresh_mpl_widget()
-                # bus.running = True
-                # Thread(target=runloop, args=(worker, 10)).start()
-                # APP.schedule(refresh_canvas, (canvas.proxy,))
-#        CheckBox: check:
-#            text = 'Toolbar Visible'
-#            checked := canvas.toolbar_visible
+
+        Container: dim:
+            constraints = [hbox(dimx, label, dimy)]
+            IntField: dimx:
+                value := worker.sim.dimensions[0]
+            Label: label:
+                text = 'x'
+            IntField: dimy:
+                value := worker.sim.dimensions[1]
+
         Form: controls:
             Looper: looper:
                 iterable = product(['blue', 'red'], ['fill', 'tolerance'])
                 Label:
-                    text << "%s %s: %d" % (slider.color, slider.param, slider.value)
+                    text << "%s %s: %d%%" % (slider.color, slider.param, slider.value)
                 Slider: slider:
                     attr color = loop_item[0]
                     attr param = loop_item[1]

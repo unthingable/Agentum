@@ -65,7 +65,7 @@ class Schelling(Simulation):
     '''
     Schelling segregation model
     '''
-    dimensions = field.List(field.Integer, (20, 40))
+    dimensions = field.List(field.Integer, [30, 30])
     agent_params = {'red': {'fill': 0.4, 'tolerance': 0.4},
                     'blue': {'fill': 0.4, 'tolerance': 0.4}}
 

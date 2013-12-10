@@ -1,37 +1,96 @@
+from itertools import product
+from threading import Thread
+
+from atom.api import Atom, Bool, Unicode, Event
 from enaml.layout.api import vbox, hbox, spacer
-from enaml.widgets.api import Window, Container, MPLCanvas, CheckBox, ComboBox, PushButton as Button
+from enaml.core.api import Looper
+from enaml.widgets.api import Window, Container, Label, MPLCanvas, CheckBox, ComboBox, PushButton as Button, PushButton, Slider, Form, GroupBox
+from enaml.application import Application
 
 from matplotlib.figure import Figure
+
+class Bus(Atom):
+    running = Bool(False)
+    event = Event()
+
+bus = Bus()
+
+def setrunning(b):
+    bus.running = b
+
+def runloop(worker, steps):
+    bus.running = True
+    worker.run(steps)
+    worker.sim.update_fig()
+    bus.running = False
+
+
+def refresh_canvas(canvas_proxy):
+    canvas_proxy._refresh_mpl_widget()
+    # import ipdb; ipdb.set_trace()
+
+enamldef SingleSlider(Form):
+    attr color
+    attr param
+    Label:
+        text << "%s %s: %d" % (color, param, slider.value)
+    Slider: slider:
+        tick_interval = 1
+        maximum = 100
+        minimum = 1
+        value << int(worker.sim.agent_params[color][param] * 100)
+        value :: worker.sim.agent_params[color][param] = slider.value / 100.0
 
 
 enamldef SchellingView(Window):
     attr worker
-    Container:
+    attr APP = Application.instance()
+    Container: main:
         constraints = [
             vbox(
                 hbox(reset, step, step100, spacer),
-                canvas,
+                hbox(controls, canvas),
             ),
             # cbox.v_center == check.v_center,
         ]
         Button: reset:
             text = 'Reset'
-#            enabled := worker.running
             clicked :: worker.sim_init(force=True); canvas.proxy._refresh_mpl_widget()
         Button: step:
             text = 'Step'
-            clicked :: worker.step(); worker.sim.update_fig(); canvas.proxy._refresh_mpl_widget()
+            clicked ::
+                step.enabled = False
+                worker.step();
+                worker.sim.update_fig();
+                canvas.proxy._refresh_mpl_widget()
+                step.enabled = True
         Button: step100:
             text = 'Step 100'
             clicked ::
-                worker.running = True
-                worker.run(100)
-                worker.sim.update_fig()
+                worker.run(100);
+                worker.sim.update_fig();
                 canvas.proxy._refresh_mpl_widget()
-                worker.running = False
+                # bus.running = True
+                # Thread(target=runloop, args=(worker, 10)).start()
+                # APP.schedule(refresh_canvas, (canvas.proxy,))
 #        CheckBox: check:
 #            text = 'Toolbar Visible'
 #            checked := canvas.toolbar_visible
+        Form: controls:
+            Looper: looper:
+                iterable = product(['blue', 'red'], ['fill', 'tolerance'])
+                Label:
+                    text << "%s %s: %d" % (slider.color, slider.param, slider.value)
+                Slider: slider:
+                    attr color = loop_item[0]
+                    attr param = loop_item[1]
+                    tick_interval = 1
+                    maximum = 100
+                    minimum = 1
+                    value << int(worker.sim.agent_params[color][slider.param] * 100)
+                    value :: worker.sim.agent_params[slider.color][slider.param] = slider.value / 100.0
+
         MPLCanvas: canvas:
             figure << worker.sim.fig
+            # bus.event :: print 'hi'
 

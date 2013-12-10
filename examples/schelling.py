@@ -28,8 +28,8 @@ class Patch(Cell):
             # Counter seems slower:
             # totals.update(resident.color for resident in cell.agents)
         for color in totals:
-            # Ratio of friends among neighbors
-            ratio = float(total_neighbors - totals[color]) / total_neighbors
+            # negative ratio of friends among neighbors
+            ratio = float(total_neighbors - (totals[color] - 1)) / total_neighbors
             self.ratios[color] = ratio
 
 
@@ -44,7 +44,7 @@ class Turtle(Agent):
         home = sim.space.find(self)
         new_home = None
         tolerance = sim.agent_params[self.color]['tolerance']
-        if force or home.ratios[self.color] < tolerance:
+        if force or home.ratios[self.color] > tolerance:
             # gotta move!
             new_home = next(x for x in sim.space.cells(CellSpace.tr_random) if not x.agents)
             # for cell in sim.space.cells(CellSpace.tr_random):
@@ -66,8 +66,8 @@ class Schelling(Simulation):
     Schelling segregation model
     '''
     dimensions = field.List(field.Integer, (20, 40))
-    agent_params = {'red': {'fill': 0.4, 'tolerance': 0.7},
-                    'blue': {'fill': 0.4, 'tolerance': 0.7}}
+    agent_params = {'red': {'fill': 0.4, 'tolerance': 0.4},
+                    'blue': {'fill': 0.4, 'tolerance': 0.4}}
 
     def setup(self):
         self.space = GridSpace(Patch, dimensions=self.dimensions)

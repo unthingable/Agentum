@@ -88,8 +88,8 @@ enamldef SchellingView(Window):
                     maximum = 100
                     minimum = 1
                     value << int(worker.sim.agent_params[color][slider.param] * 100)
-                    value :: worker.sim.agent_params[slider.color][slider.param] = slider.value / 100.0
-
+                    value ::
+                        worker.sim.agent_params[slider.color][slider.param] = slider.value / 100.0
         MPLCanvas: canvas:
             figure << worker.sim.fig
             # bus.event :: print 'hi'

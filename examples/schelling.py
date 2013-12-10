@@ -111,6 +111,8 @@ class Schelling(Simulation):
     def update_fig(self):
         from matplotlib import pyplot as plt
         from matplotlib import transforms
+
+        xlim, ylim = zip((0, 0), self.dimensions)
         if not hasattr(self, 'fig'):
             plt.axis('off')
             self.fig = plt.figure()
@@ -136,6 +138,10 @@ class Schelling(Simulation):
                           linestyle='None',
                           markersize=8,
                           transform=offset)
+
+        # need to do this on OSX
+        self.plt.set_xlim(*xlim)
+        self.plt.set_ylim(*ylim)
         # plt.draw()
 
     def draw(self):

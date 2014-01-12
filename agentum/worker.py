@@ -13,6 +13,7 @@ import inspect
 from functools import wraps
 from itertools import ifilter
 import os
+import sys
 
 from agentum import protocol, settings
 from agentum.simulation import Simulation
@@ -60,7 +61,8 @@ def find_sim(simmodule):
     if os.path.isfile(simmodule):
         dirname, module_name = os.path.split(simmodule)
         module_name = module_name.replace('.py', '')
-        module = imp.load_source(module_name, simmodule)
+        module = imp.load_source(module_name,
+                                 simmodule.replace('.pyc', '.py'))
     else:
         raise Exception("Not a file: %s" % simmodule)
     for attr in dir(module):
@@ -87,7 +89,8 @@ class WorkerBase(object):
     steps = None
     running = False
 
-    def __init__(self, simclass):
+    def __init__(self, simclass, simmodule=None):
+        self.module = simmodule or sys.modules[simclass.__module__].__file__
         self.simclass = simclass
         self.sim = simclass()
 
@@ -157,6 +160,13 @@ class WorkerBase(object):
             self.step(flush=False)
         protocol.flush(lambda x: ['frame', self.stepnum, x])
 
+    def reload(self):
+        'Reload the entire simulation'
+        newsim = find_sim(self.module)
+        self.is_setup = False
+        self.__init__(newsim, self.module)
+        self.sim_init()
+
 
 class WorkerSerial(WorkerBase):
 
@@ -219,7 +229,7 @@ class WorkerSerial(WorkerBase):
 
 def load_sim(simmodule, worker=WorkerSerial):
     sim = find_sim(simmodule)
-    return worker(sim)
+    return worker(sim, simmodule)
 
 
 # class WorkerGevent2(WorkerBase):

@@ -39,7 +39,6 @@ enamldef SchellingView(Window):
                 worker.run(100);
                 worker.sim.update_fig();
                 canvas.proxy._refresh_mpl_widget()
-
         Container: dim:
             constraints = [hbox(dimx, label, dimy)]
             IntField: dimx:

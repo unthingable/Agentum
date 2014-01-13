@@ -1,6 +1,10 @@
 from agentum import protocol
 from collections import defaultdict
 import logging
+import sys
+
+from atom.catom import Member
+from atom.api import AtomMeta, Atom
 
 from agentum import settings
 from .field import Field
@@ -95,3 +99,58 @@ class Model(object):
         for key in keys:
             protocol.send([self.stream_name, key, self.id(),
                            original])
+
+
+def split_dict(d, test):
+    a, b = {}, {}
+    for k, v in d.iteritems():
+        if test(k, v):
+            a[k] = v
+        else:
+            b[k] = v
+    return a, b
+
+
+import inspect
+class AtomizerMeta(type):
+    def __new__(meta, class_name, bases, attrs):
+        module = inspect.getmodule(inspect.stack()[1][0])
+        if module.__name__ == meta.__module__ and class_name == 'Atomizer':
+            # hide the magic until the real class comes along
+            return super(AtomizerMeta, meta).__new__(meta, class_name, bases, attrs)
+
+        # pluck out atom fields
+        atom_attrs, basic_attrs = split_dict(attrs, lambda k,v: isinstance(v, Member))
+
+        # remove Atomizer, will replace with two new classes
+        new_bases = tuple(b for b in bases if b != Atomizer)
+
+        atom_name = class_name + '_atom'
+        atom_class = type(atom_name, (Atom,), atom_attrs)
+
+        basic_name = class_name + '_deatomized'
+        basic_class = type(basic_name, new_bases, basic_attrs)
+
+        # inject into the containg module
+        for n, c in ((atom_name, atom_class), (basic_name, basic_class)):
+            setattr(module, n, c)
+            setattr(c, '__module__', module.__name__)  # just in case
+
+        return type(class_name, new_bases + (atom_class, basic_class), basic_attrs)
+
+
+class Atomizer(object):
+    '''Smart atomizer'''
+    __metaclass__ = AtomizerMeta
+
+
+'''
+Now we can do this!
+
+from atom.api import Atom, Int
+from agentum.model import model
+
+class A(model.Atomizer):
+    a = Int()
+    b = 0
+'''

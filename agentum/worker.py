@@ -15,6 +15,8 @@ from itertools import ifilter
 import os
 import sys
 
+from atom.api import Atom, Int
+
 from agentum import protocol, settings
 from agentum.simulation import Simulation
 from agentum.agent import Agent
@@ -73,23 +75,20 @@ def find_sim(simmodule):
     raise Exception("Simulation not found in module %s", simmodule)
 
 
-class WorkerBase(object):
+class WorkerAtom(Atom):
+    stepnum = Int()
+
+class WorkerBase(WorkerAtom):
 
     # clients = []
     # simulations = []
     # running_simulations = []
 
     # For now, a single simulation, no clients
-    sim = None
-    is_setup = False
-    simclass = None
-    module = None
-
-    _num_cells = 0
-    steps = None
-    running = False
 
     def __init__(self, simclass, simmodule=None):
+        self.is_setup = False
+
         self.module = simmodule or sys.modules[simclass.__module__].__file__
         self.simclass = simclass
         self.sim = simclass()

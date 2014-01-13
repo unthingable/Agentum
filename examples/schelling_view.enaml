@@ -17,7 +17,7 @@ enamldef SchellingView(Window):
     Container: main:
         constraints = [
             vbox(
-                hbox(reset, step, step100, spacer),
+                hbox(reset, step, step100, steplabel, spacer),
                 hbox(vbox(dim, controls), canvas),
             ),
             # cbox.v_center == check.v_center,
@@ -28,17 +28,17 @@ enamldef SchellingView(Window):
         Button: step:
             text = 'Step'
             clicked ::
-                step.enabled = False
                 worker.step();
                 worker.sim.update_fig();
                 canvas.proxy._refresh_mpl_widget()
-                step.enabled = True
         Button: step100:
             text = 'Step 100'
             clicked ::
                 worker.run(100);
                 worker.sim.update_fig();
                 canvas.proxy._refresh_mpl_widget()
+        Label: steplabel:
+            text << str(worker.stepnum)
         Container: dim:
             constraints = [hbox(dimx, label, dimy)]
             IntField: dimx:

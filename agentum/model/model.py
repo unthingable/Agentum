@@ -124,19 +124,26 @@ class AtomizerMeta(type):
 
         # remove Atomizer, will replace with two new classes
         new_bases = tuple(b for b in bases if b != Atomizer)
+        new_classes = {}
+
+        # allow use as both mixin and a sole superclass
+        if not new_bases:
+            basic_name = class_name + '_deatomized'
+            basic_class = type(basic_name, new_bases, {})
+            new_classes[basic_name] = basic_class
+            new_bases += (basic_class, )
 
         atom_name = class_name + '_atom'
         atom_class = type(atom_name, (Atom,), atom_attrs)
-
-        basic_name = class_name + '_deatomized'
-        basic_class = type(basic_name, new_bases, basic_attrs)
+        new_classes[atom_name] = atom_class
+        new_bases += (atom_class, )
 
         # inject into the containg module
-        for n, c in ((atom_name, atom_class), (basic_name, basic_class)):
+        for n, c in new_classes.items():
             setattr(module, n, c)
             setattr(c, '__module__', module.__name__)  # just in case
 
-        return type(class_name, new_bases + (atom_class, basic_class), basic_attrs)
+        return type(class_name, new_bases, basic_attrs)
 
 
 class Atomizer(object):

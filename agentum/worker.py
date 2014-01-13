@@ -21,6 +21,7 @@ from agentum import protocol, settings
 from agentum.simulation import Simulation
 from agentum.agent import Agent
 from agentum.space import Cell
+from agentum.model import Atomizer
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -75,16 +76,14 @@ def find_sim(simmodule):
     raise Exception("Simulation not found in module %s", simmodule)
 
 
-class WorkerAtom(Atom):
-    stepnum = Int()
-
-class WorkerBase(WorkerAtom):
+class WorkerBase(Atomizer):
 
     # clients = []
     # simulations = []
     # running_simulations = []
 
     # For now, a single simulation, no clients
+    stepnum = Int()
 
     def __init__(self, simclass, simmodule=None):
         self.is_setup = False

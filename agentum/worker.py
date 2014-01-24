@@ -126,6 +126,7 @@ class WorkerBase(Atomizer):
                         step, iterfun = step
                     else:
                         if inspect.ismethod(step) and step.im_self is not None:
+                            # a bounded method
                             self.steppables[step.im_class] = [step.im_self].__iter__
                             continue
                             # raise Exception("Only unbounded methods can be steps")

@@ -19,8 +19,7 @@ class Market(object):
     # limit orders
     sell_orders = []
     buy_orders = []
-
-    # keep them nicely sorted
+    transactions = []
 
     def __init__(self):
         self.reset()
@@ -32,6 +31,7 @@ class Market(object):
 
         del self.sell_orders[:]
         del self.buy_orders[:]
+        del self.transactions[:]
 
     def buy(self, price, quant=1):
         while quant and self.sell_orders and price >= self.lowest_sell.price:
@@ -67,6 +67,7 @@ class Market(object):
             self.sell_orders.append(Order(price, quant))
 
     def transact(self, price, quant):
+        self.transactions.append(Order(price, quant))
         self.volume += quant
         self.high = max(price, self.high)
         self.low = min(price, self.low)

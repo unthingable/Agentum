@@ -32,8 +32,7 @@ def test_buy_limit_sorting():
     market = Market()
     market.buy(100)
     market.buy(95)
-    # make sure highest buy is still 100
-    # import ipdb; ipdb.set_trace()
+    # make sure highest bid is still 100
     eq_(market.highest_buy, Order(100, 1))
 
     # now add a higher bid and check

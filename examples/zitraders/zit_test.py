@@ -1,4 +1,3 @@
-from unittest import TestCase
 from nose.tools import ok_, eq_
 from .zitraders import Market, Order
 

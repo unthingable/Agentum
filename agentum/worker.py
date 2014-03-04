@@ -70,9 +70,9 @@ def find_sim(simmodule):
         raise Exception("Not a file: %s" % simmodule)
     for attr in dir(module):
         attr = getattr(module, attr)
-        if isinstance(attr, type):
-            if issubclass(attr, Simulation):
-                return attr
+        log.debug("trying %s", attr)
+        if issubclass(attr, Simulation) and attr != Simulation:
+            return attr
     raise Exception("Simulation not found in module %s", simmodule)
 
 

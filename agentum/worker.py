@@ -128,6 +128,7 @@ class WorkerBase(Atomizer):
                         if inspect.ismethod(step) and step.im_self is not None:
                             # a bounded method
                             self.steppables[step.im_class] = [step.im_self].__iter__
+                            self.steps.append(step)
                             continue
                             # raise Exception("Only unbounded methods can be steps")
                         if issubclass(step.im_class, Agent):
@@ -139,6 +140,7 @@ class WorkerBase(Atomizer):
                             raise Exception('Unknown step class, must provide an iterator')
                     self.steppables[step.im_class] = iterfun
                     self.steps.append(step)
+                log.debug("Steps: %s", self.steps)
 
             if self.sim.space:
                 protocol.send('sim space grid'.split() +
@@ -181,7 +183,7 @@ class WorkerSerial(WorkerBase):
         sim.before_step(self.stepnum)
 
         for step_method in self.steps:
-            # log.debug('calling %r' % step_method)
+            log.debug('calling steppable %r' % step_method)
             for steppable in self.steppables[step_method.im_class]():
                 # log.debug('calling %r on %r' % (step_method, steppable))
                 if step_method.im_self is not None:

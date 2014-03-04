@@ -133,10 +133,11 @@ class AtomizerMeta(type):
             new_classes += ((basic_name, basic_class), )
             new_bases += (basic_class, )
 
-        atom_name = class_name + '_atom'
-        atom_class = type(atom_name, (Atom,), atom_attrs)
-        new_classes += ((atom_name, atom_class), )
-        new_bases += (atom_class, )
+        if atom_attrs:
+            atom_name = class_name + '_atom'
+            atom_class = type(atom_name, (Atom,), atom_attrs)
+            new_classes += ((atom_name, atom_class), )
+            new_bases += (atom_class, )
 
         # inject into the containg module
         for n, c in new_classes:

@@ -13,44 +13,6 @@ log = logging.getLogger(__name__)
 log.setLevel(settings.LOGLEVEL)
 
 
-class HeatBugs(Simulation):
-    dimensions = field.List(field.Integer, (100, 100))
-    numbugs = field.Integer(30)
-
-    heat = field.Float(1.5)          # how much heat a bug emits per turn
-    t_max = field.Integer(2)         # how much can the bug tolerate
-    t_min = field.Float(0.4)
-
-    transmission = field.Float(0.3)  # how much heat is radiated to neighbors
-    sink = field.Float(0.1)          # how much heat is lost into space
-
-    # runtime stuff
-    max_heat = field.Float(0)    # maximum heat observed
-
-    def setup(self):
-        # Create space
-        self.space = CellSpace(BugCell, dimensions=self.dimensions)
-
-        # Create agents
-        # ... for now the hard way.
-        # Must add them in both the self and the space...
-        cell_iter = cycle(self.space.cells(CellSpace.tr_random))
-        unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
-
-        # Randomly scatter the bugs around the space
-        for n, cell in izip(range(self.numbugs), unoccupied_cell_iter):
-            bug = Bug()
-            bug.sim = self
-            log.debug("Adding agent %r" % bug)
-            self.space.add_agent(bug, cell)
-            self.agents.append(bug)
-
-        self.steps = (Bug.emit_heat,
-                      BugCell.dissipate,
-                      Bug.decide_and_move,
-                      )
-
-
 # A cell can be anything: a dict, a list, an object, etc..
 class BugCell(Cell):
     heat = field.Float(default=0, quant=1)
@@ -120,3 +82,47 @@ class Bug(Agent):
         if self.new_cell:
             self.cell = self.new_cell.id()
             simulation.space.move(self, self.new_cell)
+
+
+class HeatBugs(Simulation):
+    dimensions = field.List(field.Integer, (100, 100))
+    numbugs = field.Integer(30)
+
+    heat = field.Float(1.5)          # how much heat a bug emits per turn
+    t_max = field.Integer(2)         # how much can the bug tolerate
+    t_min = field.Float(0.4)
+
+    transmission = field.Float(0.3)  # how much heat is radiated to neighbors
+    sink = field.Float(0.1)          # how much heat is lost into space
+
+    # runtime stuff
+    max_heat = field.Float(0)    # maximum heat observed
+
+    def setup(self):
+        # Create space
+        self.space = CellSpace(BugCell, dimensions=self.dimensions)
+
+        # Create agents
+        # ... for now the hard way.
+        # Must add them in both the self and the space...
+        cell_iter = cycle(self.space.cells(CellSpace.tr_random))
+        unoccupied_cell_iter = (x for x in cell_iter if not x.bugs)
+
+        # Randomly scatter the bugs around the space
+        for n, cell in izip(range(self.numbugs), unoccupied_cell_iter):
+            bug = Bug()
+            bug.sim = self
+            log.debug("Adding agent %r" % bug)
+            self.space.add_agent(bug, cell)
+            self.agents.append(bug)
+
+        self.steps = (Bug.emit_heat,
+                      BugCell.dissipate,
+                      Bug.decide_and_move,
+                      )
+
+    def plot(self):
+        from matplotlib import pyplot as plt
+        from matplotlib import transforms
+
+        xlim, ylim = zip((0, 0), self.dimensions)

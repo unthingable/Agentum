@@ -71,7 +71,7 @@ def find_sim(simmodule):
     for attr in dir(module):
         attr = getattr(module, attr)
         log.debug("trying %s", attr)
-        if issubclass(attr, Simulation) and attr != Simulation:
+        if inspect.isclass(attr) and issubclass(attr, Simulation) and attr != Simulation:
             return attr
     raise Exception("Simulation not found in module %s", simmodule)
 

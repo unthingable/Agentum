@@ -222,6 +222,17 @@ class GridSpace(CellSpace):
     def dimensions(self):
         return self._dimensions
 
+    def to_matrix(self, f):
+        """
+        Render the cell matrix and apply f inside.
+        """
+        import numpy as np
+        a = np.empty(self._dimensions)
+
+        for xyz in product(*imap(xrange, self._dimensions)):
+            a[xyz] = f(self.idx_cell_map[(xyz)])
+        return a
+
     def __len__(self):
         return len(self.idx_cell_map)
 

@@ -20,6 +20,7 @@ class Patch(Cell):
         total_neighbors = 0
         totals = defaultdict(int)
         # totals = Counter()
+        # rewrite as a comprehensions?
         hood = list(chain(hood, [self]))
         for cell in hood:
             total_neighbors += len(cell.agents)

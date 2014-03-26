@@ -121,8 +121,22 @@ class HeatBugs(Simulation):
                       Bug.decide_and_move,
                       )
 
-    def plot(self):
+    def mplot(self):
         from matplotlib import pyplot as plt
         from matplotlib import transforms
+        import matplotlib.cm as cm
 
         xlim, ylim = zip((0, 0), self.dimensions)
+        if not hasattr(self, 'fig'):
+            plt.axis('off')
+            self.fig = plt.figure()
+            self.plt = self.fig.add_subplot(111,
+                                            axisbg='k',
+                                            aspect='equal')
+
+        self.plt.clear()
+        self.plt.imshow(self.space.to_matrix(lambda c: c.heat))
+
+        # need to do this on OSX
+        self.plt.set_xlim(*xlim)
+        self.plt.set_ylim(*ylim)

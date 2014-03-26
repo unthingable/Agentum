@@ -120,7 +120,7 @@ def run_main():
             while True:
                 m = ws.receive()
                 log.debug("Received: %s" % m)
-                if cmd.onecmd(m):
+                if m and cmd.onecmd(m):
                     break
 
         def app(environ, start_response):

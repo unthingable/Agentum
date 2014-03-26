@@ -99,9 +99,9 @@ def run_main():
         import gevent
         from gevent import monkey; monkey.patch_all()
         from gevent.server import StreamServer
-        gevent.signal(signal.SIGQUIT, dbhandler)
-        gevent.signal(signal.SIGTERM, gevent.shutdown)
-        gevent.signal(signal.SIGHUP, gevent.shutdown)
+        # gevent.signal(signal.SIGQUIT, dbhandler)
+        # gevent.signal(signal.SIGTERM, gevent.shutdown)
+        # gevent.signal(signal.SIGHUP, gevent.shutdown)
 
         import os.path
         from gevent import pywsgi
@@ -144,7 +144,8 @@ def run_main():
                     start_response(status, headers)
                     return [response_body]
                 else:
-                    return None
+                    start_response('404 NOT FOUND', [('Content-Type', 'text/plain')])
+                    return ['Not Found']
 
         ws_server = pywsgi.WSGIServer(
             ('', 9990), app,

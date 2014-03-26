@@ -59,8 +59,9 @@ def fpass(*x):
 
 
 def find_sim(simmodule):
-    # options, args = parse_args()
-    # simmodule = args[0]
+    """
+    simmodule: pathname string
+    """
     if os.path.isfile(simmodule):
         dirname, module_name = os.path.split(simmodule)
         module_name = module_name.replace('.py', '')

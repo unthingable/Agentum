@@ -46,7 +46,6 @@ class Cell(Model):
         Model.__init__(self)
         self.agents = set()
         self.properties = properties or {}
-        # import ipdb; ipdb.set_trace()
         self.point = point
 
     # def id(self):
@@ -264,9 +263,11 @@ class GridSpace(CellSpace):
 
     def add_agent(self, agent, cell):
         self.agent_map[agent] = cell
+        cell.agents.add(agent)
 
     def del_agent(self, agent):
         del self.agent_map[agent]
+        agent.cell.agents.remove(agent)
 
     def agents(self, with_cells=False):
         return self.agent_map.keys()

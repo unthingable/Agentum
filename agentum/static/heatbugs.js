@@ -85,6 +85,7 @@ require( ["agentum/js/agentum"], function ( agentum ) {
       self.set_pixel(pointmap[point], _calculate_color(heat));
     });
 
+    this.draw();
     return true;
 
 
